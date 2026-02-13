@@ -26,34 +26,50 @@
 
             <div class="bg-[#F5F5F7] rounded-2xl p-1 space-y-px overflow-hidden border border-[#D2D2D7]/30">
                 <div class="relative">
-                    <label for="email-address" class="sr-only">Email address</label>
-                    <input formControlName="email" id="email-address" type="email" autocomplete="email" required
+                    <label for="phone-number" class="sr-only">Phone number</label>
+                    <input formControlName="phone_number" id="phone-number" type="tel" autocomplete="tel" required
+                        [readonly]="step() === 'otp'"
                         class="block w-full px-5 py-4 bg-transparent border-none text-[#1D1D1F] placeholder-[#86868B] focus:ring-0 sm:text-sm"
-                        placeholder="Email address">
+                        placeholder="Phone number">
                 </div>
 
+                @if (step() === 'otp') {
                 <div class="h-[1px] bg-[#D2D2D7]/50 mx-4"></div>
-
                 <div class="relative">
-                    <label for="password" class="sr-only">Password</label>
-                    <input formControlName="password" id="password" type="password" autocomplete="current-password"
-                        required
-                        class="block w-full px-5 py-4 bg-transparent border-none text-[#1D1D1F] placeholder-[#86868B] focus:ring-0 sm:text-sm"
-                        placeholder="Password">
+                    <label for="otp" class="sr-only">OTP</label>
+                    <input formControlName="otp" id="otp" type="text" inputmode="numeric" autocomplete="one-time-code"
+                        class="block w-full px-5 py-4 bg-transparent border-none text-[#1D1D1F] placeholder-[#86868B] focus:ring-0 sm:text-sm tracking-[0.35em]"
+                        placeholder="Enter OTP">
                 </div>
+                }
             </div>
+
+            @if (helperMessage()) {
+            <div class="text-[#0071E3] text-[13px] font-semibold text-center">
+                {{ helperMessage() }}
+            </div>
+            }
 
             <div *ngIf="errorMessage()" class="text-[#FF3B30] text-[13px] font-semibold text-center animate-pulse">
                 {{ errorMessage() }}
             </div>
 
             <div class="space-y-4">
-                <button type="submit" [disabled]="loginForm.invalid"
+                <button type="submit" [disabled]="loginForm.invalid || isLoading()"
                     class="w-full flex justify-center py-3.5 px-4 bg-[#0071E3] text-white text-sm font-bold rounded-2xl hover:bg-[#0077ED] active:scale-[0.98] transition-all disabled:opacity-30 shadow-md shadow-blue-500/20">
-                    Continue
+                    @if (step() === 'phone') {
+                    Send OTP
+                    } @else {
+                    Verify OTP
+                    }
                 </button>
 
-                <button type="button"
+                <button type="button" [disabled]="isLoading()" (click)="requestOtp()" *ngIf="step() === 'otp'"
+                    class="w-full py-2 text-sm font-semibold text-[#86868B] hover:text-[#1D1D1F] transition-colors disabled:opacity-50">
+                    Resend OTP
+                </button>
+
+                <button type="button" *ngIf="step() === 'phone'"
                     class="w-full py-2 text-sm font-semibold text-[#86868B] hover:text-[#1D1D1F] transition-colors">
                     Forgot password?
                 </button>

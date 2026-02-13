@@ -24,7 +24,7 @@
         <div class="hidden md:flex items-center gap-3 pl-6 border-l border-gray-200">
           <div class="text-right hidden lg:block">
             <div class="text-sm font-semibold text-gray-900 leading-tight">{{ currentUser()?.name }}</div>
-            <div class="text-xs text-gray-500 font-medium">{{ currentUser()?.email }}</div>
+            <div class="text-xs text-gray-500 font-medium">{{ currentUser()?.email || currentUser()?.phone_number }}</div>
           </div>
 
           <button class="relative group cursor-pointer focus:outline-none">
@@ -70,7 +70,7 @@
         </div>
         <div class="ml-3">
           <div class="text-base font-medium leading-none text-gray-800">{{ currentUser()?.name }}</div>
-          <div class="text-sm font-medium leading-none text-gray-500 mt-1">{{ currentUser()?.email }}</div>
+          <div class="text-sm font-medium leading-none text-gray-500 mt-1">{{ currentUser()?.email || currentUser()?.phone_number }}</div>
         </div>
       </div>
       } @else {
