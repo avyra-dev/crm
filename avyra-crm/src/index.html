@@ -6,6 +6,49 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    (function () {
+      var key = 'crm_theme';
+      var map = {
+        primary: '--theme-primary',
+        primaryHover: '--theme-primary-hover',
+        primaryContrast: '--theme-primary-contrast',
+        accentStart: '--theme-accent-start',
+        accentEnd: '--theme-accent-end',
+        textPrimary: '--theme-text-primary',
+        textSecondary: '--theme-text-secondary',
+        textMuted: '--theme-text-muted',
+        bgApp: '--theme-bg-app',
+        bgSurface: '--theme-bg-surface',
+        bgSurfaceSoft: '--theme-bg-surface-soft',
+        border: '--theme-border',
+        danger: '--theme-danger',
+        dangerHover: '--theme-danger-hover',
+        success: '--theme-success'
+      };
+
+      try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return;
+        var theme = JSON.parse(raw);
+        var root = document.documentElement;
+
+        Object.keys(map).forEach(function (themeKey) {
+          var cssVar = map[themeKey];
+          var value = theme && theme[themeKey];
+          if (typeof value === 'string' && value.trim()) {
+            var color = value.trim();
+            var isHex = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(color);
+            var isColor = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('color', color);
+            if (isHex || isColor) {
+              root.style.setProperty(cssVar, color);
+            }
+          }
+        });
+      } catch (_error) {
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

@@ -87,28 +87,73 @@ export class ResponseInterceptor<T>
     return `${hours}:${minutes}`;
   }
 
-  private convertDates(value: unknown, timeZone: string): unknown {
+  private convertDates(value: unknown, timeZone: string, seen = new WeakSet<object>()): unknown {
     if (value === null || value === undefined) return value;
-    if (value instanceof Date) {
-      return this.formatDateInTimeZone(value, timeZone);
-    }
-    if (Array.isArray(value)) {
-      return value.map((item) => this.convertDates(item, timeZone));
-    }
-    if (typeof value === 'object') {
-      const out: Record<string, unknown> = {};
-      for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
-        out[key] = this.convertDates(val, timeZone);
-      }
-      return out;
-    }
     if (typeof value === 'string' && this.isIsoDateString(value)) {
       const date = new Date(value);
       if (!Number.isNaN(date.getTime())) {
         return this.formatDateInTimeZone(date, timeZone);
       }
     }
+    if (typeof value !== 'object') return value;
+
+    const objectValue = value as object;
+    if (seen.has(objectValue)) {
+      return null;
+    }
+    seen.add(objectValue);
+
+    if (value instanceof Date) {
+      return this.formatDateInTimeZone(value, timeZone);
+    }
+    if (Array.isArray(value)) {
+      return value.map((item) => this.convertDates(item, timeZone, seen));
+    }
+
+    const plainValue = this.toPlainObject(value as Record<string, unknown>);
+    if (plainValue !== value) {
+      return this.convertDates(plainValue, timeZone, seen);
+    }
+
+    const out: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = this.convertDates(val, timeZone, seen);
+    }
+    return out;
+  }
+
+  private toPlainObject(value: Record<string, unknown>): unknown {
+    if (this.isPlainObject(value)) {
+      return value;
+    }
+
+    const candidate = value as Record<string, any>;
+
+    if (typeof candidate.toObject === 'function') {
+      try {
+        return candidate.toObject();
+      } catch {
+        // Fall through to toJSON/Object.entries handling.
+      }
+    }
+
+    if (typeof candidate.toJSON === 'function') {
+      try {
+        return candidate.toJSON();
+      } catch {
+        // Fall through to Object.entries handling.
+      }
+    }
+
     return value;
+  }
+
+  private isPlainObject(value: unknown): value is Record<string, unknown> {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
   }
 
   private isIsoDateString(value: string): boolean {

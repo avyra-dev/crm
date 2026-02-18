@@ -1,3 +1,231 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import "tailwindcss";
+
+:root {
+  --theme-primary: #007aff;
+  --theme-primary-hover: #0066e0;
+  --theme-primary-contrast: #ffffff;
+  --theme-accent-start: #00ff95;
+  --theme-accent-end: #0055ff;
+  --theme-text-primary: #1d1d1f;
+  --theme-text-secondary: #424245;
+  --theme-text-muted: #86868b;
+  --theme-bg-app: #f5f5f7;
+  --theme-bg-surface: #ffffff;
+  --theme-bg-surface-soft: #f0f2f5;
+  --theme-border: #d2d2d7;
+  --theme-danger: #ff3b30;
+  --theme-danger-hover: #e22f26;
+  --theme-success: #34c759;
+}
+
+html,
+body {
+  background: var(--theme-bg-app);
+  color: var(--theme-text-primary);
+}
+
+.theme-bg-app {
+  background-color: var(--theme-bg-app);
+}
+
+.theme-border {
+  border-color: var(--theme-border);
+}
+
+.theme-text-primary {
+  color: var(--theme-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--theme-text-muted);
+}
+
+.theme-link-primary {
+  color: var(--theme-primary);
+}
+
+.theme-link-primary:hover {
+  color: var(--theme-primary-hover);
+}
+
+.theme-brand-gradient {
+  background-image: linear-gradient(135deg, var(--theme-accent-start), var(--theme-accent-end));
+}
+
+.theme-primary-btn {
+  background-color: var(--theme-primary);
+  color: var(--theme-primary-contrast);
+}
+
+.theme-primary-btn:hover {
+  background-color: var(--theme-primary-hover);
+}
+
+.theme-primary-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 22%, transparent);
+}
+
+.theme-muted-action {
+  color: var(--theme-text-muted);
+}
+
+.theme-muted-action:hover {
+  color: var(--theme-text-primary);
+}
+
+.theme-helper-primary {
+  color: var(--theme-primary);
+}
+
+.theme-error {
+  color: var(--theme-danger);
+}
+
+.theme-auth-page {
+  background-color: var(--theme-bg-app);
+  color: var(--theme-text-primary);
+}
+
+.theme-auth-card {
+  background: color-mix(in srgb, var(--theme-bg-surface) 86%, transparent);
+  border-color: color-mix(in srgb, var(--theme-border) 40%, white);
+}
+
+.theme-auth-input-shell {
+  background-color: var(--theme-bg-app);
+  border-color: color-mix(in srgb, var(--theme-border) 70%, white);
+}
+
+.theme-auth-divider {
+  background-color: color-mix(in srgb, var(--theme-border) 55%, white);
+}
+
+.theme-auth-input {
+  color: var(--theme-text-primary);
+}
+
+.theme-auth-input::placeholder {
+  color: var(--theme-text-muted);
+}
+
+.theme-legal-emphasis {
+  color: var(--theme-text-secondary);
+}
+
+.theme-sidebar {
+  background-color: color-mix(in srgb, var(--theme-bg-surface) 82%, transparent);
+  border-right-color: color-mix(in srgb, var(--theme-border) 70%, transparent);
+}
+
+.theme-sidebar-header {
+  background-color: color-mix(in srgb, var(--theme-bg-surface) 94%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--theme-border) 45%, transparent);
+}
+
+.theme-sidebar-link {
+  color: var(--theme-text-muted);
+}
+
+.theme-sidebar-link:hover {
+  color: var(--theme-text-primary);
+  background-color: color-mix(in srgb, var(--theme-bg-surface-soft) 80%, white);
+}
+
+.theme-sidebar-link-active {
+  color: var(--theme-text-primary);
+  background-color: color-mix(in srgb, var(--theme-primary) 9%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-primary) 20%, transparent);
+}
+
+.theme-sidebar-footer {
+  border-top-color: color-mix(in srgb, var(--theme-border) 45%, transparent);
+  background-color: color-mix(in srgb, var(--theme-bg-surface) 82%, transparent);
+}
+
+.theme-danger-btn {
+  color: color-mix(in srgb, var(--theme-danger) 85%, white);
+}
+
+.theme-danger-btn:hover {
+  color: var(--theme-danger-hover);
+  background-color: color-mix(in srgb, var(--theme-danger) 11%, white);
+}
+
+.theme-navbar {
+  background-color: color-mix(in srgb, var(--theme-bg-surface) 82%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--theme-border) 60%, transparent);
+}
+
+.theme-search-icon {
+  color: var(--theme-text-muted);
+}
+
+.group:focus-within .theme-search-icon {
+  color: var(--theme-primary);
+}
+
+.theme-search-input {
+  background-color: var(--theme-bg-surface-soft);
+  color: var(--theme-text-primary);
+}
+
+.theme-search-input::placeholder {
+  color: var(--theme-text-muted);
+}
+
+.theme-search-input:focus {
+  background-color: var(--theme-bg-surface);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 18%, transparent);
+}
+
+.theme-ghost-btn {
+  color: var(--theme-text-secondary);
+}
+
+.theme-ghost-btn:hover {
+  color: var(--theme-text-primary);
+  background-color: color-mix(in srgb, var(--theme-bg-surface-soft) 90%, white);
+}
+
+.theme-mobile-trigger {
+  color: var(--theme-text-muted);
+}
+
+.theme-mobile-trigger:hover {
+  color: var(--theme-text-secondary);
+  background-color: var(--theme-bg-surface-soft);
+}
+
+.theme-mobile-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary) 42%, transparent);
+}
+
+.theme-mobile-menu {
+  border-top-color: color-mix(in srgb, var(--theme-border) 45%, transparent);
+  background-color: color-mix(in srgb, var(--theme-bg-surface) 95%, transparent);
+}
+
+.theme-mobile-login-btn {
+  color: var(--theme-text-secondary);
+  background-color: var(--theme-bg-surface-soft);
+}
+
+.theme-mobile-login-btn:hover {
+  color: var(--theme-text-primary);
+  background-color: color-mix(in srgb, var(--theme-bg-surface-soft) 74%, white);
+}
+
+.theme-avatar-ring {
+  --tw-ring-color: transparent;
+}
+
+.theme-avatar-ring:hover {
+  --tw-ring-color: color-mix(in srgb, var(--theme-border) 75%, white);
+}

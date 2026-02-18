@@ -1,0 +1,98 @@
+<section class="settings-page">
+  <div class="settings-shell">
+    <header class="settings-header">
+      <div class="settings-header__brand">
+        <span class="settings-header__badge" aria-hidden="true">T</span>
+        <div>
+          <h1 class="settings-title">Workspace Settings</h1>
+          <p class="settings-subtitle">Professional controls for your dashboard theme system.</p>
+        </div>
+      </div>
+      <p class="settings-note">Apply All saves as your default workspace theme</p>
+    </header>
+
+    <div class="settings-layout">
+      <aside class="settings-aside">
+        <div class="settings-tabs" role="tablist" aria-label="Settings tabs">
+          @for (tab of tabs; track tab) {
+          <button type="button" role="tab" class="settings-tab" [class.settings-tab--active]="activeTab === tab"
+            [attr.aria-selected]="activeTab === tab" (click)="setActiveTab(tab)">
+            {{ tab }}
+          </button>
+          }
+        </div>
+
+        @if (activeTab === 'Theme') {
+        <section class="preview-card" aria-label="Theme Preview">
+          <header class="preview-card__header">
+            <span class="preview-card__chip">Preview</span>
+            <h2 class="preview-card__title">Live Theme Snapshot</h2>
+          </header>
+
+          <div class="preview-card__surface">
+            <div class="preview-card__topbar"></div>
+            <div class="preview-card__text">
+              <p class="preview-card__headline">Dashboard heading</p>
+              <p class="preview-card__muted">Muted helper text for forms and hints.</p>
+            </div>
+            <div class="preview-card__actions">
+              <span class="preview-btn preview-btn--primary">Primary</span>
+              <span class="preview-btn preview-btn--surface">Surface</span>
+              <span class="preview-btn preview-btn--danger">Danger</span>
+            </div>
+          </div>
+        </section>
+        }
+      </aside>
+
+      <main class="settings-content">
+        @if (activeTab === 'Theme') {
+        <form class="settings-form" (ngSubmit)="applyAll()">
+          <header class="editor-header">
+            <h2 class="editor-title">Theme Tokens</h2>
+            <p class="editor-subtitle">Edit values and apply instantly across your dashboard UI.</p>
+          </header>
+
+          <div class="token-sections">
+            @for (section of themeSections; track section.id) {
+            <section class="token-section">
+              <header class="token-section__header">
+                <h3 class="token-section__title">{{ section.title }}</h3>
+                <p class="token-section__description">{{ section.description }}</p>
+              </header>
+
+              <div class="token-grid">
+                @for (field of section.fields; track field.key) {
+                <label class="theme-field">
+                  <span class="theme-field__meta">
+                    <span class="theme-field__label">{{ field.label }}</span>
+                    <span class="theme-field__hint">{{ field.hint }}</span>
+                    <code class="theme-field__key">{{ field.key }}</code>
+                  </span>
+
+                  <span class="theme-field__controls">
+                    <input type="color" class="theme-field__color" [ngModel]="themeDraft[field.key]"
+                      (ngModelChange)="onTokenInput(field.key, $event); applyToken(field.key, $event)"
+                      [name]="'color-' + field.key" />
+                    <input type="text" class="theme-field__text" [ngModel]="themeDraft[field.key]"
+                      (ngModelChange)="onTokenInput(field.key, $event)"
+                      (blur)="applyToken(field.key, themeDraft[field.key])" [name]="'text-' + field.key"
+                      autocomplete="off" spellcheck="false" />
+                  </span>
+                </label>
+                }
+              </div>
+            </section>
+            }
+          </div>
+
+          <div class="settings-actions">
+            <button type="submit" class="settings-apply-btn theme-primary-btn">Apply All</button>
+            <button type="button" class="settings-reset-btn" (click)="resetTheme()">Reset Default</button>
+          </div>
+        </form>
+        }
+      </main>
+    </div>
+  </div>
+</section>

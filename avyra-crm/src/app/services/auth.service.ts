@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { StorageService } from './storage.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { ThemeService } from './theme.service';
 
 export interface User {
     id: string;
@@ -38,7 +39,12 @@ export class AuthService {
     private readonly API_BASE_URL = 'http://localhost:3000/api/v1';
     currentUser = signal<User | null>(null);
 
-    constructor(private storage: StorageService, private router: Router, private http: HttpClient) {
+    constructor(
+        private storage: StorageService,
+        private router: Router,
+        private http: HttpClient,
+        private themeService: ThemeService
+    ) {
         this.loadUser();
     }
 
@@ -64,6 +70,7 @@ export class AuthService {
             tap((response) => {
                 if (response.status && response.data?.token && response.data?.user) {
                     this.setSession(response.data.token, response.data.user);
+                    this.themeService.syncDefaultThemeFromBackend();
                     this.router.navigate(['/dashboard']);
                 }
             })
@@ -88,6 +95,7 @@ export class AuthService {
     logout() {
         this.storage.removeItem(this.TOKEN_KEY);
         this.storage.removeItem(this.USER_KEY);
+        this.themeService.resetTheme();
         this.currentUser.set(null);
         this.router.navigate(['/login']);
     }
