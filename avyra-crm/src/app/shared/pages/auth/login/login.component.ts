@@ -1,6 +1,5 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -9,7 +8,7 @@ type LoginStep = 'phone' | 'otp';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
@@ -52,7 +51,12 @@ export class LoginComponent {
           this.loginForm.get('otp')?.reset();
           this.loginForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6)]);
           this.loginForm.get('otp')?.updateValueAndValidity();
-          this.helperMessage.set('OTP sent to your phone. Enter the 6-digit code.');
+          this.loginForm.get('otp')?.setValue(response.data?.otp ?? '');
+          this.helperMessage.set(
+            response.data?.is_new_user
+              ? 'Account created. OTP sent to your phone. Enter the 6-digit code.'
+              : 'OTP sent to your phone. Enter the 6-digit code.'
+          );
         } else {
           this.errorMessage.set(response.message || 'Unable to send OTP.');
         }

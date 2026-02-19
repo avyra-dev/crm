@@ -5,6 +5,7 @@ import { createHash, randomBytes, randomInt } from 'crypto';
 import { User, UserDocument } from './schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { BusinessThemesService } from 'src/business-themes/business-themes.service';
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,7 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private configService: ConfigService,
     private jwtService: JwtService,
+    private businessThemesService: BusinessThemesService,
   ) {}
 
   private static OTP_LENGTH = 6;
@@ -33,6 +35,11 @@ export class UsersService {
     return { otp, salt, hash };
   }
 
+  private buildDefaultName(phoneNumber: string): string {
+    const lastFour = phoneNumber.slice(-4);
+    return `User ${lastFour || phoneNumber}`;
+  }
+
   async seedUsers() {
     const users = Array.from({ length: 10 }).map((_, i) => ({
       name: `User ${i + 1}`,
@@ -42,7 +49,10 @@ export class UsersService {
       deleted_at: null,
     }));
 
-    await this.userModel.insertMany(users);
+    const createdUsers = await this.userModel.insertMany(users);
+    await Promise.all(
+      createdUsers.map((user) => this.businessThemesService.ensureDefaultThemeForUser(user._id.toString())),
+    );
     return { message: '10 users seeded successfully' };
   }
 
@@ -65,10 +75,36 @@ export class UsersService {
   }
 
   async sendOtp(phone_number: string) {
-    const user = await this.userModel.findOne({ phone_number });
+    const normalizedPhoneNumber = String(phone_number ?? '').trim();
+    if (!normalizedPhoneNumber) {
+      return { message: 'Phone number is required', status: false, statusCode: 400 };
+    }
+
+    let user = await this.userModel.findOne({ phone_number: normalizedPhoneNumber });
+    let isNewUser = false;
 
     if (!user) {
-      return { message: 'User not found', status: false, statusCode: 404 };
+      try {
+        user = await this.userModel.create({
+          name: this.buildDefaultName(normalizedPhoneNumber),
+          phone_number: normalizedPhoneNumber,
+        });
+        await this.businessThemesService.ensureDefaultThemeForUser(user._id.toString());
+        isNewUser = true;
+      } catch (error: any) {
+        // Handle rare race where another request creates the same phone record first.
+        if (error?.code !== 11000) {
+          throw error;
+        }
+        user = await this.userModel.findOne({ phone_number: normalizedPhoneNumber });
+        if (user) {
+          await this.businessThemesService.ensureDefaultThemeForUser(user._id.toString());
+        }
+      }
+    }
+
+    if (!user) {
+      return { message: 'Unable to process OTP request', status: false, statusCode: 500 };
     }
 
     const now = new Date();
@@ -89,15 +125,21 @@ export class UsersService {
 
     // Simulate sending OTP
     return {
-      message: 'OTP sent successfully',
+      message: isNewUser ? 'Account created and OTP sent successfully' : 'OTP sent successfully',
       status: true,
       statusCode: 200,
-      data: { expires_at: expiresAt, otp: otp },
+      data: { expires_at: expiresAt, otp: otp, is_new_user: isNewUser },
     };
   }
 
   async verifyOtp(phone_number: string, otp: string) {
-    const user = await this.userModel.findOne({ phone_number });
+    const normalizedPhoneNumber = String(phone_number ?? '').trim();
+    const normalizedOtp = String(otp ?? '').trim();
+    if (!normalizedPhoneNumber || !normalizedOtp) {
+      return { message: 'Phone number and OTP are required', status: false, statusCode: 400 };
+    }
+
+    const user = await this.userModel.findOne({ phone_number: normalizedPhoneNumber });
 
     if (!user) {
       return { message: 'User not found', status: false, statusCode: 404 };
@@ -116,7 +158,7 @@ export class UsersService {
       return { message: 'OTP expired', status: false, statusCode: 400 };
     }
 
-    const incomingHash = this.hashOtp(otp, user.otp_salt);
+    const incomingHash = this.hashOtp(normalizedOtp, user.otp_salt);
     if (incomingHash !== user.otp_hash) {
       const attempts = (user.otp_attempts ?? 0) + 1;
       user.otp_attempts = attempts;

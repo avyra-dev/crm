@@ -1,6 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { StorageService } from './storage.service';
 
 export interface ThemeConfig {
@@ -102,7 +102,7 @@ export class ThemeService {
     }
     this.applyTheme(nextTheme);
     this.theme.set(nextTheme);
-    this.syncDefaultThemeFromBackend();
+    this.syncThemeFromBackend('default');
     return nextTheme;
   }
 
@@ -129,14 +129,25 @@ export class ThemeService {
   }
 
   syncDefaultThemeFromBackend(): void {
+    this.syncThemeFromBackend('default');
+  }
+
+  syncThemeFromBackend(businessId: string = 'default'): void {
     const token = this.storage.getItem<string>(this.TOKEN_KEY);
     if (!token) {
       return;
     }
 
+    const normalizedBusinessId = this.normalizeBusinessId(businessId);
+    let params = new HttpParams();
+    if (normalizedBusinessId) {
+      params = params.set('business_id', normalizedBusinessId);
+    }
+
     this.http
       .get<ApiResponse<BusinessThemeRecord>>(`${this.API_BASE_URL}/business-themes/default`, {
         headers: this.getAuthHeaders(token),
+        params,
       })
       .subscribe({
         next: (response) => {
@@ -155,17 +166,23 @@ export class ThemeService {
   }
 
   saveDefaultTheme(theme: Partial<ThemeConfig>): void {
+    this.saveTheme(theme, 'default');
+  }
+
+  saveTheme(theme: Partial<ThemeConfig>, businessId: string = 'default'): void {
     const token = this.storage.getItem<string>(this.TOKEN_KEY);
     if (!token) {
       return;
     }
 
     const normalizedTheme = this.normalizeTheme(theme);
+    const normalizedBusinessId = this.normalizeBusinessId(businessId);
     this.http
       .post<ApiResponse<BusinessThemeRecord>>(
         `${this.API_BASE_URL}/business-themes/default`,
         {
           name: 'default',
+          ...(normalizedBusinessId ? { business_id: normalizedBusinessId } : {}),
           theme: normalizedTheme,
         },
         {
@@ -186,6 +203,14 @@ export class ThemeService {
           // Theme is still applied locally even when save API fails.
         },
       });
+  }
+
+  private normalizeBusinessId(businessId: string | null | undefined): string | null {
+    if (!businessId || businessId === 'default') {
+      return null;
+    }
+
+    return businessId;
   }
 
   private normalizeTheme(theme: Partial<ThemeConfig> | null): ThemeConfig {

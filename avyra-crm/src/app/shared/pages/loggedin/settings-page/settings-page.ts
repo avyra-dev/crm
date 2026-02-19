@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ThemeConfig, ThemeService } from '../../../../services/theme.service';
+import { BusinessService } from '../../../../services/business.service';
 
 type SettingsTab = 'Theme' | 'Integrations' | 'Account' | 'Billing';
 type ThemeSectionId = 'Brand' | 'Typography' | 'Surfaces' | 'Status';
@@ -27,9 +28,11 @@ interface ThemeSection {
 })
 export class SettingsPage {
   private readonly themeService = inject(ThemeService);
+  private readonly businessService = inject(BusinessService);
 
   readonly tabs: SettingsTab[] = ['Theme', 'Integrations', 'Account', 'Billing'];
   activeTab: SettingsTab = 'Theme';
+  activeThemeScopeLabel = computed(() => this.businessService.selectedBusiness()?.name ?? 'Default');
 
   themeDraft: ThemeConfig = this.themeService.getDefaultTheme();
 
@@ -80,7 +83,9 @@ export class SettingsPage {
   ];
 
   constructor() {
-    this.themeDraft = { ...this.themeService.theme() };
+    effect(() => {
+      this.themeDraft = { ...this.themeService.theme() };
+    });
   }
 
   setActiveTab(tab: SettingsTab): void {
@@ -103,7 +108,7 @@ export class SettingsPage {
 
   applyAll(): void {
     const updatedTheme = this.themeService.updateTheme(this.themeDraft);
-    this.themeService.saveDefaultTheme(updatedTheme);
+    this.themeService.saveTheme(updatedTheme, this.businessService.selectedBusinessId());
     this.themeDraft = { ...updatedTheme };
   }
 

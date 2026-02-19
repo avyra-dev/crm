@@ -17,3 +17,4 @@
 /crm-backend/.env.development
 /crm-backend/.env.production
 /crm-backend/.env.test
+/crm-backend/uploads

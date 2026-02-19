@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
-import { UserSchema } from './schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersService } from './users.service';
-import { UsersController } from './controllers/users.controller';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { BusinessesController } from './controllers/businesses.controller';
+import { BusinessesService } from './businesses.service';
+import { Business, BusinessSchema } from './schemas/business.schema';
 import { BusinessThemesModule } from 'src/business-themes/business-themes.module';
 
 @Module({
@@ -27,10 +27,11 @@ import { BusinessThemesModule } from 'src/business-themes/business-themes.module
         };
       },
     }),
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: Business.name, schema: BusinessSchema }]),
     BusinessThemesModule,
   ],
-  providers: [UsersService, JwtAuthGuard],
-  controllers: [UsersController],
+  controllers: [BusinessesController],
+  providers: [BusinessesService, JwtAuthGuard],
+  exports: [BusinessesService],
 })
-export class UsersModule {}
+export class BusinessesModule {}

@@ -1,0 +1,365 @@
+:host {
+  display: block;
+}
+
+.business-selector-btn {
+  min-width: 250px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 68%, white);
+  background: color-mix(in srgb, var(--theme-bg-surface) 92%, white);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  transition: all 0.2s ease;
+}
+
+.business-selector-btn:hover {
+  border-color: color-mix(in srgb, var(--theme-primary) 45%, white);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--theme-primary) 18%, transparent);
+}
+
+.business-selector-copy {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.business-selector-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--theme-text-primary);
+  line-height: 1.2;
+}
+
+.business-selector-subtitle {
+  font-size: 0.72rem;
+  color: var(--theme-text-muted);
+  line-height: 1.2;
+  margin-top: 0.1rem;
+}
+
+.business-menu-panel {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  width: 320px;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 65%, white);
+  background: color-mix(in srgb, var(--theme-bg-surface) 95%, white);
+  box-shadow: 0 22px 45px color-mix(in srgb, black 16%, transparent);
+  padding: 0.5rem;
+  z-index: 80;
+}
+
+.business-option {
+  width: 100%;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.55rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.business-option:hover {
+  background: color-mix(in srgb, var(--theme-primary) 11%, white);
+}
+
+.business-option--active {
+  background: color-mix(in srgb, var(--theme-primary) 15%, white);
+}
+
+.business-option-avatar {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 60%, white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--theme-bg-surface-soft) 80%, white);
+  overflow: hidden;
+  color: var(--theme-text-secondary);
+}
+
+.business-option-avatar--default {
+  color: var(--theme-primary);
+}
+
+.business-option-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.business-option-initial {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--theme-text-primary);
+}
+
+.business-option-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.business-option-title {
+  font-size: 0.79rem;
+  font-weight: 700;
+  color: var(--theme-text-primary);
+}
+
+.business-option-subtitle {
+  font-size: 0.7rem;
+  color: var(--theme-text-muted);
+}
+
+.business-menu-divider {
+  height: 1px;
+  margin: 0.4rem 0.25rem 0.5rem;
+  background: color-mix(in srgb, var(--theme-border) 55%, white);
+}
+
+.business-add-btn {
+  width: 100%;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.63rem 0.7rem;
+  font-size: 0.79rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: var(--theme-primary-contrast);
+  background: linear-gradient(120deg, var(--theme-primary), var(--theme-accent-end));
+}
+
+.business-drawer-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.business-drawer-shell--open {
+  pointer-events: auto;
+}
+
+.business-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 9, 18, 0.45);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.business-drawer-shell--open .business-drawer-backdrop {
+  opacity: 1;
+}
+
+.business-drawer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: min(430px, 100vw);
+  background: color-mix(in srgb, var(--theme-bg-surface) 95%, white);
+  border-left: 1px solid color-mix(in srgb, var(--theme-border) 58%, white);
+  box-shadow: -20px 0 45px color-mix(in srgb, black 22%, transparent);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.business-drawer-shell--open .business-drawer {
+  transform: translateX(0);
+}
+
+.business-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.2rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-border) 55%, white);
+}
+
+.business-drawer-kicker {
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--theme-text-muted);
+}
+
+.business-drawer-title {
+  margin-top: 0.22rem;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--theme-text-primary);
+}
+
+.business-drawer-close {
+  border: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-bg-surface-soft) 82%, white);
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+}
+
+.business-form {
+  padding: 1rem 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  overflow: auto;
+}
+
+.business-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.business-form-field > span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--theme-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.business-form-field input,
+.business-form-field select {
+  border-radius: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 63%, white);
+  background: color-mix(in srgb, var(--theme-bg-surface) 92%, white);
+  color: var(--theme-text-primary);
+  padding: 0.68rem 0.72rem;
+  font-size: 0.83rem;
+}
+
+.business-form-field input:focus-visible,
+.business-form-field select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--theme-primary) 45%, white);
+  outline-offset: 1px;
+}
+
+.business-logo-dropzone {
+  border-radius: 0.9rem;
+  border: 1.5px dashed color-mix(in srgb, var(--theme-border) 62%, white);
+  background: color-mix(in srgb, var(--theme-bg-surface-soft) 72%, white);
+  min-height: 155px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  padding: 0.8rem;
+}
+
+.business-logo-dropzone--dragover {
+  border-color: color-mix(in srgb, var(--theme-primary) 55%, white);
+  background: color-mix(in srgb, var(--theme-primary) 12%, white);
+}
+
+.business-logo-empty {
+  text-align: center;
+}
+
+.business-logo-empty i {
+  font-size: 1.25rem;
+  color: var(--theme-primary);
+}
+
+.business-logo-empty p {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--theme-text-primary);
+}
+
+.business-logo-empty span {
+  margin-top: 0.2rem;
+  display: block;
+  font-size: 0.7rem;
+  color: var(--theme-text-muted);
+}
+
+.business-logo-preview {
+  width: 100%;
+  max-height: 190px;
+  object-fit: contain;
+  border-radius: 0.7rem;
+}
+
+.business-logo-remove {
+  position: absolute;
+  right: 0.55rem;
+  top: 0.55rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.86);
+  color: white;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.business-form-error {
+  border-radius: 0.65rem;
+  padding: 0.56rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--theme-danger);
+  background: color-mix(in srgb, var(--theme-danger) 11%, white);
+}
+
+.business-form-actions {
+  margin-top: 0.2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.business-cancel-btn,
+.business-submit-btn {
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.62rem 0.88rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.business-cancel-btn {
+  color: var(--theme-text-secondary);
+  background: color-mix(in srgb, var(--theme-bg-surface-soft) 78%, white);
+}
+
+.business-submit-btn {
+  color: var(--theme-primary-contrast);
+  background: linear-gradient(120deg, var(--theme-primary), var(--theme-accent-end));
+}
+
+.business-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .business-drawer {
+    width: 100vw;
+  }
+}

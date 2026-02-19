@@ -6,6 +6,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { BusinessThemesController } from './controllers/business-themes.controller';
 import { BusinessThemesService } from './business-themes.service';
 import { BusinessTheme, BusinessThemeSchema } from './schemas/business-theme.schema';
+import { Business, BusinessSchema } from 'src/businesses/schemas/business.schema';
 
 @Module({
   imports: [
@@ -26,7 +27,10 @@ import { BusinessTheme, BusinessThemeSchema } from './schemas/business-theme.sch
         };
       },
     }),
-    MongooseModule.forFeature([{ name: BusinessTheme.name, schema: BusinessThemeSchema }]),
+    MongooseModule.forFeature([
+      { name: BusinessTheme.name, schema: BusinessThemeSchema },
+      { name: Business.name, schema: BusinessSchema },
+    ]),
   ],
   controllers: [BusinessThemesController],
   providers: [BusinessThemesService, JwtAuthGuard],

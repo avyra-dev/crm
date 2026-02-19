@@ -4,6 +4,7 @@ import { StorageService } from './storage.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { ThemeService } from './theme.service';
+import { BusinessService } from './business.service';
 
 export interface User {
     id: string;
@@ -23,6 +24,7 @@ export interface ApiResponse<T> {
 export interface OtpRequestData {
     expires_at: string;
     otp?: string;
+    is_new_user?: boolean;
 }
 
 export interface OtpVerifyData {
@@ -43,7 +45,8 @@ export class AuthService {
         private storage: StorageService,
         private router: Router,
         private http: HttpClient,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        private businessService: BusinessService
     ) {
         this.loadUser();
     }
@@ -95,6 +98,7 @@ export class AuthService {
     logout() {
         this.storage.removeItem(this.TOKEN_KEY);
         this.storage.removeItem(this.USER_KEY);
+        this.businessService.clearState();
         this.themeService.resetTheme();
         this.currentUser.set(null);
         this.router.navigate(['/login']);
