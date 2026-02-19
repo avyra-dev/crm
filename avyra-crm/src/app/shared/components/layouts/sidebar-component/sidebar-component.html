@@ -30,6 +30,7 @@
     <!-- Dashboard links here -->
     <a routerLink="/dashboard"
        routerLinkActive="theme-sidebar-link-active"
+       [routerLinkActiveOptions]="{ exact: true }"
        class="flex items-center gap-3 h-10 px-2 py-3 my-2 rounded-lg text-md font-medium
               theme-sidebar-link transition-all duration-200">
 
@@ -40,6 +41,33 @@
 
       <span>Dashboard</span>
     </a>
+
+    <p class="px-2 pt-2 text-[10px] uppercase tracking-[0.12em] theme-text-muted whitespace-nowrap">
+      Objects
+    </p>
+
+    @if (isObjectsLoading()) {
+    <p class="px-2 py-1 text-[11px] theme-text-muted whitespace-nowrap">Loading...</p>
+    } @else if (!objects().length) {
+    <p class="px-2 py-1 text-[11px] theme-text-muted whitespace-nowrap">No objects yet</p>
+    } @else {
+    <div class="space-y-1">
+      @for (objectRecord of objects(); track objectRecord.id) {
+      <a [routerLink]="buildObjectRoute(objectRecord)"
+         routerLinkActive="theme-sidebar-link-active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         class="flex items-center gap-3 h-9 px-2 rounded-lg text-[12px] font-medium theme-sidebar-link transition-all duration-200">
+
+        <div class="h-6 w-6 rounded-md theme-brand-gradient
+                    text-white text-[11px] flex items-center justify-center shrink-0">
+          {{ objectInitial(objectRecord.name) }}
+        </div>
+
+        <span class="truncate">{{ objectRecord.name }}</span>
+      </a>
+      }
+    </div>
+    }
 
   </div>
 

@@ -1,0 +1,570 @@
+<section class="object-workspace">
+  <div class="object-workspace__shell">
+    <header class="object-overview">
+      <div class="object-overview__top">
+        <nav class="object-breadcrumbs" aria-label="Breadcrumb">
+          <a routerLink="/dashboard">Dashboard</a>
+          <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+          <a routerLink="/dashboard">Objects</a>
+          <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+          <span class="object-breadcrumbs__current">{{ objectHeading() }}</span>
+        </nav>
+
+        @if (selectedObject(); as objectRecord) {
+        <div class="object-overview__badges">
+          <span class="overview-badge">{{ workspaceLabel() }}</span>
+          <span class="overview-badge" [class.overview-badge--active]="objectRecord.status === 1">
+            {{ statusLabel(objectRecord.status) }}
+          </span>
+        </div>
+        }
+      </div>
+
+      @if (isLoading() && !selectedObject()) {
+      <section class="object-state object-state--loading">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>Loading object workspace...</p>
+      </section>
+      } @else if (selectedObject(); as objectRecord) {
+      <section class="object-hero">
+        <div class="object-hero__identity">
+          <div class="object-hero__avatar">{{ objectInitial(objectRecord.name) }}</div>
+          <div>
+            <p class="object-hero__kicker">Object Workspace</p>
+            <div class="object-hero__title-anchor" tabindex="0" aria-label="Object metadata">
+              <h1 class="object-hero__title">{{ objectRecord.name }}</h1>
+              <p class="object-hero__meta-hint">Hover to view meta details</p>
+
+              <section class="object-meta-popover" aria-live="polite">
+                <p class="object-meta-popover__title">Object Meta Details</p>
+                <dl class="object-meta-popover__list">
+                  <div>
+                    <dt>Object Key</dt>
+                    <dd class="object-meta-popover__code">{{ objectRecord.key }}</dd>
+                  </div>
+                  <div>
+                    <dt>Status</dt>
+                    <dd>
+                      <span class="status-pill" [class.status-pill--active]="objectRecord.status === 1">
+                        {{ statusLabel(objectRecord.status) }}
+                      </span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Mapped Businesses</dt>
+                    <dd>{{ objectRecord.mapped_business_count }}</dd>
+                  </div>
+                  <div>
+                    <dt>Created</dt>
+                    <dd>{{ formatDate(objectRecord.created_at) }}</dd>
+                  </div>
+                  <div>
+                    <dt>Workspace</dt>
+                    <dd>{{ workspaceLabel() }}</dd>
+                  </div>
+                  <div>
+                    <dt>Object ID</dt>
+                    <dd class="object-meta-popover__code">{{ objectRecord.id }}</dd>
+                  </div>
+                  <div>
+                    <dt>Updated</dt>
+                    <dd>{{ formatDate(objectRecord.updated_at) }}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+            <p class="object-hero__subtitle">{{ description() }}</p>
+          </div>
+        </div>
+
+        <div class="object-hero__actions">
+          @if (canAddRecord()) {
+          <a [routerLink]="buildAddRecordRoute(objectRecord)" class="object-btn object-btn--primary">
+            <i class="fa-solid fa-plus"></i>
+            Add {{ objectRecord.name }}
+          </a>
+          }
+          <button type="button" class="object-btn object-btn--ghost" [attr.aria-expanded]="isInfoPopupOpen()"
+            (click)="toggleInfoPopup()">
+            <i class="fa-solid fa-circle-info"></i>
+            Object Info
+          </button>
+          <a routerLink="/settings" [queryParams]="{ tab: 'Fields' }" class="object-btn object-btn--ghost">
+            <i class="fa-solid fa-sliders"></i>
+            Manage In Settings
+          </a>
+          <a routerLink="/dashboard" class="object-btn object-btn--ghost">
+            <i class="fa-solid fa-table-cells-large"></i>
+            All Objects
+          </a>
+        </div>
+      </section>
+
+      @if (isInfoPopupOpen()) {
+      <div class="object-info-backdrop" (click)="closeInfoPopup()">
+        <section class="object-info-dialog" role="dialog" aria-modal="true" aria-label="Object information panel"
+          (click)="$event.stopPropagation()">
+          <header class="object-info-dialog__header">
+            <div>
+              <p class="object-info-dialog__kicker">Object Info</p>
+              <h2>Structure & Field Options</h2>
+              <p>Manage lifecycle workflow and field mapping from one panel.</p>
+            </div>
+
+            <button type="button" class="object-info-dialog__close" (click)="closeInfoPopup()"
+              aria-label="Close object info">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </header>
+
+          <div class="object-info-dialog__content">
+            <section class="object-panel object-panel--info">
+              <header class="object-panel__header">
+                <h2 class="object-panel__title">Structure & Workflow</h2>
+                <p class="object-panel__subtitle">Standard CRM controls for managing this object lifecycle.</p>
+              </header>
+
+              <div class="object-checklist">
+                <article class="check-item">
+                  <h3>Record Layout</h3>
+                  <p>Define core fields, required constraints, and data formatting for records in {{ objectRecord.name }}.</p>
+                </article>
+                <article class="check-item">
+                  <h3>Pipeline Stages</h3>
+                  <p>Attach deal/task progress stages and enforce movement rules for cleaner forecasting.</p>
+                </article>
+                <article class="check-item">
+                  <h3>Automations</h3>
+                  <p>Configure assignment, reminders, and follow-up workflows when records are created or updated.</p>
+                </article>
+                <article class="check-item">
+                  <h3>Permissions</h3>
+                  <p>Restrict edit/delete access per role so only authorized teams can update this object.</p>
+                </article>
+              </div>
+            </section>
+
+            <section class="object-panel object-panel--info">
+              <section class="object-fields object-fields--popup">
+                <header class="object-fields__header">
+                  <h3>Field Options</h3>
+                  <p>
+                    @if (showInlineFieldCreation()) {
+                    Create new fields directly inside this object. This writes to field schema and object mapping pivot.
+                    } @else {
+                    Field creation is managed from <strong>Settings &gt; Fields</strong> once this object has mapped fields.
+                    }
+                  </p>
+                </header>
+
+                @if (showInlineFieldCreation()) {
+                <form [formGroup]="createFieldForm" (ngSubmit)="submitCreateField()" class="object-fields__form">
+                  <label class="object-fields__field">
+                    <span>Field Name</span>
+                    <input type="text" formControlName="name" placeholder="Example: Budget Range" />
+                  </label>
+
+                  <div class="object-fields__inline">
+                    <label class="object-fields__field">
+                      <span>Field Key (optional)</span>
+                      <input type="text" formControlName="key" placeholder="budget_range" />
+                    </label>
+                    <label class="object-fields__field">
+                      <span>Type</span>
+                      <select formControlName="type">
+                        @for (fieldType of fieldTypeOptions; track fieldType.value) {
+                        <option [value]="fieldType.value">{{ fieldType.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  </div>
+
+                  @if (showFieldOptionsInput()) {
+                  <div class="object-fields__field object-fields__field--options">
+                    <span>Select Options</span>
+
+                    <div class="object-fields__option-builder">
+                      <input type="text" [value]="fieldOptionDraft()"
+                        (input)="onFieldOptionDraftInput(($any($event.target).value))"
+                        (keydown.enter)="addFieldOption($event)" placeholder="Type option and press Enter" />
+                      <button type="button" class="object-fields__option-add-btn" (click)="addFieldOption()">
+                        Add
+                      </button>
+                    </div>
+
+                    <p class="object-fields__hint object-fields__hint--plain">
+                      Add options quickly with Enter. You can also paste comma or new-line values.
+                    </p>
+                    <textarea rows="3" formControlName="options" placeholder="Small, Medium, Large"></textarea>
+
+                    @if (fieldOptionErrorMessage()) {
+                    <p class="object-fields__error">{{ fieldOptionErrorMessage() }}</p>
+                    }
+
+                    @if (createFieldOptionsPreview().length) {
+                    <div class="object-fields__chips">
+                      @for (option of createFieldOptionsPreview(); track option) {
+                      <button type="button" class="object-fields__chip" (click)="removeFieldOption(option)"
+                        [attr.aria-label]="'Remove option ' + option">
+                        <span>{{ option }}</span>
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      </button>
+                      }
+                    </div>
+                    }
+                  </div>
+                  }
+
+                  <label class="object-fields__field">
+                    <span>Description</span>
+                    <textarea rows="2" formControlName="description"
+                      placeholder="Used for qualification and reporting"></textarea>
+                  </label>
+
+                  <div class="object-fields__inline">
+                    <label class="object-fields__switch">
+                      <input type="checkbox" formControlName="is_required" />
+                      <span>Required Field</span>
+                    </label>
+
+                    <label class="object-fields__field">
+                      <span>Status</span>
+                      <select formControlName="status">
+                        <option [value]="1">Active</option>
+                        <option [value]="0">Inactive</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  @if (fieldErrorMessage()) {
+                  <p class="object-fields__error">{{ fieldErrorMessage() }}</p>
+                  }
+                  @if (fieldSuccessMessage()) {
+                  <p class="object-fields__success">{{ fieldSuccessMessage() }}</p>
+                  }
+
+                  <div class="object-fields__actions">
+                    <button type="submit" class="object-btn object-btn--primary"
+                      [disabled]="createFieldForm.invalid || isCreatingField()">
+                      @if (isCreatingField()) {
+                      Saving...
+                      } @else {
+                      Add Field
+                      }
+                    </button>
+                  </div>
+                </form>
+                } @else if (!isFieldsLoading()) {
+                <p class="object-fields__hint">Use <strong>Settings &gt; Fields</strong> to add new fields once this object already has mapped fields.</p>
+                }
+
+                <div class="object-fields__list">
+                  <h4>Mapped Fields</h4>
+
+                  @if (isFieldsLoading()) {
+                  <div class="object-fields__state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Loading fields...</p>
+                  </div>
+                  } @else if (!fields().length) {
+                  <div class="object-fields__state">
+                    <i class="fa-regular fa-square-plus"></i>
+                    <p>No fields mapped for this object yet.</p>
+                  </div>
+                  } @else {
+                  <div class="object-fields__grid">
+                    @for (fieldRecord of fields(); track fieldRecord.id) {
+                    <article class="object-field-card">
+                      <header class="object-field-card__header">
+                        <div>
+                          <h5>{{ fieldRecord.name }}</h5>
+                          <p>{{ fieldRecord.key }}</p>
+                        </div>
+                        <div class="object-field-card__actions">
+                          <span class="field-type-pill">{{ fieldTypeLabel(fieldRecord.type) }}</span>
+                          <button type="button" class="field-remove-btn" [disabled]="removingFieldId() === fieldRecord.id"
+                            (click)="unmapField(fieldRecord)">
+                            @if (removingFieldId() === fieldRecord.id) {
+                            Removing...
+                            } @else {
+                            Remove
+                            }
+                          </button>
+                        </div>
+                      </header>
+
+                      @if (fieldRecord.description) {
+                      <p class="object-field-card__description">{{ fieldRecord.description }}</p>
+                      }
+
+                      <div class="object-field-card__meta">
+                        <span>{{ fieldRecord.is_required ? 'Required' : 'Optional' }}</span>
+                        <span>Status: {{ fieldRecord.status === 1 ? 'Active' : 'Inactive' }}</span>
+                        <span>Created {{ formatDate(fieldRecord.created_at) }}</span>
+                      </div>
+                    </article>
+                    }
+                  </div>
+                  }
+                </div>
+              </section>
+            </section>
+          </div>
+        </section>
+      </div>
+      }
+
+      }
+    </header>
+
+    @if (selectedObject(); as objectRecord) {
+    <div class="object-layout">
+      <section class="object-panel object-panel--records">
+        @if (hasMappedFields()) {
+        <section class="object-records">
+          <header class="object-records__header">
+            <div>
+              <h3>{{ objectRecord.name }} Data</h3>
+              <p>Search, sort, export, and manage object records in a CRM-style grid.</p>
+            </div>
+
+            <div class="object-records__actions">
+              <label class="object-records__search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" [value]="recordSearchTerm()" (input)="onRecordSearch(($any($event.target).value))"
+                  placeholder="Search records..." />
+              </label>
+
+              <section class="object-records__views" aria-label="Object table list views">
+                <label for="object-list-view-select">List View</label>
+                <div class="object-records__views-controls">
+                  <select id="object-list-view-select" [value]="selectedListViewId() ?? ''"
+                    [disabled]="isLoadingListViews() || isSavingListView() || !listViews().length"
+                    (change)="onListViewSelect(($any($event.target).value))">
+                    @if (isLoadingListViews()) {
+                    <option value="">Loading views...</option>
+                    } @else if (!listViews().length) {
+                    <option value="">No views available</option>
+                    }
+                    @for (viewRecord of listViews(); track viewRecord.id) {
+                    <option [value]="viewRecord.id">{{ viewRecord.name }}</option>
+                    }
+                  </select>
+                  <button type="button" class="object-btn object-btn--ghost"
+                    [disabled]="isLoadingListViews() || isSavingListView() || !tableFields().length"
+                    (click)="createListView()">
+                    <i class="fa-solid fa-plus"></i>
+                    New View
+                  </button>
+                </div>
+              </section>
+
+              <div class="object-columns">
+                <button type="button" class="object-btn object-btn--ghost" [attr.aria-expanded]="isColumnPickerOpen()"
+                  [disabled]="isLoadingListViews() || isSavingListView() || !selectedListViewId()"
+                  (click)="toggleColumnPicker()">
+                  <i class="fa-solid fa-table-columns"></i>
+                  Columns
+                  @if (hiddenFieldColumnCount()) {
+                  <span class="object-columns__badge">{{ hiddenFieldColumnCount() }} hidden</span>
+                  }
+                </button>
+
+                @if (isColumnPickerOpen()) {
+                <section class="object-columns__panel" role="dialog" aria-label="Configure visible columns">
+                  <header class="object-columns__panel-header">
+                    <h4>Visible Columns</h4>
+                    <p>Select which field columns appear in the table.</p>
+                  </header>
+
+                  <div class="object-columns__panel-list">
+                    @for (fieldRecord of tableFields(); track fieldRecord.id) {
+                    <label class="object-columns__item">
+                      <input type="checkbox" [checked]="isFieldColumnVisible(fieldRecord.id)" [disabled]="isSavingListView()"
+                        (change)="toggleFieldColumn(fieldRecord.id, $any($event.target).checked)" />
+                      <div>
+                        <span>{{ fieldRecord.name }}</span>
+                        <small>{{ fieldTypeLabel(fieldRecord.type) }}</small>
+                      </div>
+                    </label>
+                    }
+                  </div>
+
+                  @if (columnPreferenceMessage()) {
+                  <p class="object-columns__message">{{ columnPreferenceMessage() }}</p>
+                  }
+
+                  <footer class="object-columns__panel-actions">
+                    <button type="button" [disabled]="isSavingListView()" (click)="showRequiredFieldColumns()">Required Only</button>
+                    <button type="button" [disabled]="isSavingListView()" (click)="showAllFieldColumns()">Show All</button>
+                    <button type="button" (click)="closeColumnPicker()">Done</button>
+                  </footer>
+                </section>
+                }
+              </div>
+
+              <button type="button" class="object-btn object-btn--ghost" [disabled]="isExportingRecords()"
+                (click)="exportRecords()">
+                <i class="fa-solid fa-file-export"></i>
+                @if (isExportingRecords()) {
+                Exporting...
+                } @else {
+                Export CSV
+                }
+              </button>
+            </div>
+          </header>
+
+          @if (isSavingListView()) {
+          <p class="object-records__hint">Saving list view preferences...</p>
+          }
+
+          @if (listViewErrorMessage()) {
+          <p class="object-records__error">{{ listViewErrorMessage() }}</p>
+          }
+
+          @if (listViewSuccessMessage()) {
+          <p class="object-records__success">{{ listViewSuccessMessage() }}</p>
+          }
+
+          @if (recordErrorMessage()) {
+          <p class="object-records__error">{{ recordErrorMessage() }}</p>
+          }
+
+          @if (isLoadingRecords()) {
+          <div class="object-records__state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Loading data records...</p>
+          </div>
+          } @else {
+          @if (hasHorizontalOverflow()) {
+          <div class="object-records__scroll-tools">
+            <span><i class="fa-solid fa-arrows-left-right"></i> Horizontal scroll</span>
+            <div>
+              <button type="button" [disabled]="!canScrollTableLeft()" (click)="scrollRecordsTable('left')">
+                <i class="fa-solid fa-angle-left"></i>
+                Left
+              </button>
+              <button type="button" [disabled]="!canScrollTableRight()" (click)="scrollRecordsTable('right')">
+                Right
+                <i class="fa-solid fa-angle-right"></i>
+              </button>
+            </div>
+          </div>
+          }
+
+          <div #recordsTableShell class="object-records__table-shell" (scroll)="onRecordsTableScroll()">
+            <table class="object-records__table">
+              <thead>
+                <tr>
+                  <th>
+                    <button type="button" (click)="onRecordSort('created_at')">
+                      Created
+                      <i [class]="sortIndicator('created_at')"></i>
+                    </button>
+                  </th>
+                  @for (fieldRecord of visibleTableFields(); track fieldRecord.id) {
+                  <th>
+                    <button type="button" (click)="onRecordSort(fieldRecord.id)">
+                      {{ fieldRecord.name }}
+                      <i [class]="sortIndicator(fieldRecord.id)"></i>
+                    </button>
+                  </th>
+                  }
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (!records().length) {
+                <tr>
+                  <td [attr.colspan]="recordColumnCount()" class="object-records__empty">
+                    No data present.
+                  </td>
+                </tr>
+                } @else {
+                @for (recordItem of records(); track recordItem.id) {
+                <tr>
+                  <td>{{ formatDate(recordItem.created_at) }}</td>
+                  @for (fieldRecord of visibleTableFields(); track fieldRecord.id) {
+                  <td>{{ recordCellValue(recordItem, fieldRecord) }}</td>
+                  }
+                  <td>{{ formatDate(recordItem.updated_at) }}</td>
+                </tr>
+                }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <footer class="object-records__footer">
+            <p>
+              @if (recordTotal()) {
+              Showing {{ recordRangeStart() }}-{{ recordRangeEnd() }} of {{ recordTotal() }}
+              } @else {
+              No records available
+              }
+            </p>
+            <div class="object-records__pagination">
+              <button type="button" (click)="goToPreviousPage()"
+                [disabled]="recordCurrentPage() <= 1 || isLoadingRecords()">
+                Previous
+              </button>
+              <span>Page {{ recordCurrentPage() }} of {{ recordTotalPages() }}</span>
+              <button type="button" (click)="goToNextPage()"
+                [disabled]="recordCurrentPage() >= recordTotalPages() || isLoadingRecords()">
+                Next
+              </button>
+            </div>
+          </footer>
+          }
+        </section>
+        } @else if (isFieldsLoading()) {
+        <div class="object-records__state">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Loading field schema...</p>
+        </div>
+        } @else {
+        <section class="object-state object-state--inline">
+          <i class="fa-regular fa-square-plus"></i>
+          <h3>No Fields Configured</h3>
+          <p>Open Object Info to configure structure and add fields before creating records.</p>
+          <button type="button" class="object-btn object-btn--primary" (click)="openInfoPopup()">
+            <i class="fa-solid fa-circle-info"></i>
+            Open Object Info
+          </button>
+        </section>
+        }
+      </section>
+
+      @if (relatedObjects().length) {
+      <section class="object-panel">
+        <header class="object-panel__header">
+          <h2 class="object-panel__title">Switch Object</h2>
+          <p class="object-panel__subtitle">Quick navigation across related mapped objects.</p>
+        </header>
+
+        <div class="related-objects related-objects--inline">
+          <div class="related-objects__list">
+            @for (related of relatedObjects(); track related.id) {
+            <a [routerLink]="buildObjectRoute(related)" class="related-objects__item">
+              {{ related.name }}
+            </a>
+            }
+          </div>
+        </div>
+      </section>
+      }
+    </div>
+    } @else if (!isLoading()) {
+    <section class="object-state object-state--empty">
+      <i class="fa-regular fa-folder-open"></i>
+      <h2>Object Not Found</h2>
+      <p>The object <strong>{{ objectHeading() }}</strong> is not available in the current workspace.</p>
+      <a routerLink="/dashboard" class="object-btn object-btn--primary">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back To Object Library
+      </a>
+    </section>
+    }
+  </div>
+</section>

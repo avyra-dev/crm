@@ -1,0 +1,302 @@
+:host {
+  display: block;
+}
+
+.object-create-shell {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 58%, white);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--theme-primary) 12%, transparent), transparent 45%),
+    color-mix(in srgb, var(--theme-bg-surface) 98%, transparent);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.object-create-header {
+  padding-bottom: 11px;
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-border) 52%, white);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.object-create-kicker {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--theme-text-muted);
+}
+
+.object-create-title {
+  margin: 4px 0 0;
+  font-size: 21px;
+  color: var(--theme-text-primary);
+}
+
+.object-create-subtitle {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--theme-text-muted);
+}
+
+.object-create-badges {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.object-create-badges span {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--theme-primary) 42%, white);
+  background: color-mix(in srgb, var(--theme-primary) 10%, white);
+  color: var(--theme-primary);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+
+.object-create-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(230px, 1fr);
+  gap: 12px;
+}
+
+.object-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.object-mode,
+.object-form-section,
+.object-aside-card {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 58%, white);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--theme-bg-surface) 96%, white);
+  padding: 10px;
+}
+
+.object-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.object-mode__header h4,
+.object-form-section h4,
+.object-aside-card h4 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--theme-text-primary);
+}
+
+.object-mode__header p,
+.object-form-section header p,
+.object-aside-card p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--theme-text-muted);
+  line-height: 1.5;
+}
+
+.object-mode__toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.object-mode__btn {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 62%, white);
+  border-radius: 9px;
+  background: var(--theme-bg-surface);
+  color: var(--theme-text-secondary);
+  min-height: 34px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.object-mode__btn--active {
+  color: var(--theme-text-primary);
+  border-color: color-mix(in srgb, var(--theme-primary) 45%, white);
+  background: color-mix(in srgb, var(--theme-primary) 13%, white);
+}
+
+.object-mode__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.object-mode__hint,
+.object-mode__note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--theme-text-muted);
+}
+
+.object-mode__note {
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--theme-primary) 36%, white);
+  background: color-mix(in srgb, var(--theme-primary) 8%, white);
+  color: var(--theme-text-secondary);
+  padding: 6px 8px;
+}
+
+.object-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.object-form-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.object-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.object-form__field--status {
+  max-width: 220px;
+}
+
+.object-form__field > span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--theme-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.object-form__field input,
+.object-form__field textarea,
+.object-form__field select {
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 62%, white);
+  background: color-mix(in srgb, var(--theme-bg-surface) 94%, white);
+  color: var(--theme-text-primary);
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.object-form__field textarea {
+  resize: vertical;
+}
+
+.object-form__field input:focus-visible,
+.object-form__field textarea:focus-visible,
+.object-form__field select:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--theme-primary) 48%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 16%, transparent);
+}
+
+.object-form__error {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-danger);
+  background: color-mix(in srgb, var(--theme-danger) 11%, white);
+}
+
+.object-form__success {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-success);
+  background: color-mix(in srgb, var(--theme-success) 11%, white);
+}
+
+.object-form__actions {
+  margin-top: 2px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.object-submit-btn {
+  border: none;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--theme-primary-contrast);
+  background: linear-gradient(120deg, var(--theme-primary), var(--theme-accent-end));
+}
+
+.object-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.object-create-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.object-aside-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.object-aside-card ol {
+  margin: 2px 0 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--theme-text-secondary);
+  font-size: 12px;
+}
+
+.object-aside-card code {
+  font-size: 11px;
+  color: var(--theme-primary);
+}
+
+.object-aside-card--note {
+  border-color: color-mix(in srgb, var(--theme-primary) 36%, white);
+  background: color-mix(in srgb, var(--theme-primary) 7%, white);
+}
+
+@media (max-width: 1020px) {
+  .object-create-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .object-create-header {
+    flex-direction: column;
+  }
+
+  .object-form-grid,
+  .object-mode__toggle {
+    grid-template-columns: 1fr;
+  }
+
+  .object-form__field--status {
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .object-create-shell {
+    padding: 12px;
+  }
+}

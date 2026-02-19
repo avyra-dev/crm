@@ -1,0 +1,209 @@
+<section class="objects-page">
+  <div class="objects-shell">
+    <header class="objects-header">
+      <div>
+        <p class="objects-header__kicker">CRM Objects</p>
+        <h1 class="objects-header__title">{{ workspaceLabel() }}</h1>
+        <p class="objects-header__subtitle">
+          Professional object management for schema, records, and business mapping.
+        </p>
+      </div>
+
+      <div class="objects-header__actions">
+        <a routerLink="/settings" [queryParams]="{ tab: 'Objects' }" class="objects-create-link">
+          <i class="fa-solid fa-gear"></i>
+          Manage Objects
+        </a>
+      </div>
+    </header>
+
+    <div class="objects-metrics">
+      <article class="metric-card">
+        <p class="metric-card__label">Scope</p>
+        <p class="metric-card__value metric-card__value--text">{{ workspaceScopeLabel() }}</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-card__label">Total Objects</p>
+        <p class="metric-card__value">{{ totalCount() }}</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-card__label">Active</p>
+        <p class="metric-card__value">{{ activeObjects() }}</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-card__label">Business Links</p>
+        <p class="metric-card__value">{{ totalBusinessLinks() }}</p>
+      </article>
+    </div>
+
+    @if (actionErrorMessage()) {
+    <p class="objects-banner objects-banner--error">{{ actionErrorMessage() }}</p>
+    }
+
+    <section class="objects-toolbar" aria-label="Object controls">
+      <label class="objects-control objects-control--search">
+        <span>Search</span>
+        <div>
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" [value]="searchTerm()" (input)="onSearchInput(($any($event.target).value))"
+            placeholder="Search by name, key, description" />
+        </div>
+      </label>
+
+      <label class="objects-control">
+        <span>Status</span>
+        <select [value]="statusFilter()" (change)="onStatusFilterChange(($any($event.target).value))">
+          @for (option of statusFilterOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="objects-control">
+        <span>Sort</span>
+        <select [value]="sortMode()" (change)="onSortModeChange(($any($event.target).value))">
+          @for (option of sortOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="objects-view-toggle" role="group" aria-label="View mode">
+        <button type="button" [class.objects-view-toggle__btn--active]="viewMode() === 'cards'"
+          (click)="setViewMode('cards')">
+          <i class="fa-solid fa-grip"></i>
+          Cards
+        </button>
+        <button type="button" [class.objects-view-toggle__btn--active]="viewMode() === 'table'"
+          (click)="setViewMode('table')">
+          <i class="fa-solid fa-table"></i>
+          Table
+        </button>
+      </div>
+
+      <button type="button" class="objects-clear-btn" [disabled]="!hasActiveFilters()" (click)="clearFilters()">
+        <i class="fa-solid fa-rotate-left"></i>
+        Reset
+      </button>
+    </section>
+
+    <section class="objects-panel">
+      <header class="objects-panel__header">
+        <div>
+          <h2 class="objects-panel__title">Object Library</h2>
+          <p class="objects-panel__subtitle">
+            Showing {{ filteredCount() }} of {{ totalCount() }} objects
+          </p>
+        </div>
+
+        <div class="objects-panel__badges">
+          <span class="objects-badge">Active: {{ activeObjects() }}</span>
+          <span class="objects-badge objects-badge--muted">Inactive: {{ inactiveObjects() }}</span>
+        </div>
+      </header>
+
+      @if (isLoading()) {
+      <div class="objects-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>Loading objects...</p>
+      </div>
+      } @else if (!objects().length) {
+      <div class="objects-state objects-state--empty">
+        <i class="fa-regular fa-square-plus"></i>
+        <h3>No Objects Yet</h3>
+        <p>Create your first object in settings to start building your CRM structure.</p>
+        <a routerLink="/settings" [queryParams]="{ tab: 'Objects' }" class="objects-state__btn">Create In Settings</a>
+      </div>
+      } @else if (!filteredObjects().length) {
+      <div class="objects-state objects-state--empty">
+        <i class="fa-solid fa-filter-circle-xmark"></i>
+        <h3>No Matching Objects</h3>
+        <p>Try broadening filters or reset controls to view your full object library.</p>
+        <button type="button" class="objects-state__btn" (click)="clearFilters()">Reset Filters</button>
+      </div>
+      } @else if (viewMode() === 'cards') {
+      <div class="objects-grid">
+        @for (objectRecord of filteredObjects(); track objectRecord.id) {
+        <article class="object-card">
+          <header class="object-card__header">
+            <div>
+              <h3 class="object-card__title">{{ objectRecord.name }}</h3>
+              <p class="object-card__key">{{ objectRecord.key }}</p>
+            </div>
+
+            <span class="object-card__status" [class.object-card__status--active]="objectRecord.status === 1">
+              {{ statusLabel(objectRecord.status) }}
+            </span>
+          </header>
+
+          <p class="object-card__description">
+            {{ objectRecord.description || 'No description added for this object yet.' }}
+          </p>
+
+          <div class="object-card__meta">
+            <span>Mapped: {{ objectRecord.mapped_business_count }} businesses</span>
+            <span>Created {{ formatDate(objectRecord.created_at) }}</span>
+          </div>
+
+          <footer class="object-card__actions">
+            <a [routerLink]="openObjectRoute(objectRecord)" class="object-card__open">Open</a>
+            <a [routerLink]="addRecordRoute(objectRecord)" class="object-card__add">Add Record</a>
+            <button type="button" class="object-card__delete" [disabled]="deletingObjectId() === objectRecord.id"
+              (click)="deleteObject(objectRecord)">
+              @if (deletingObjectId() === objectRecord.id) {
+              Deleting...
+              } @else {
+              Delete
+              }
+            </button>
+          </footer>
+        </article>
+        }
+      </div>
+      } @else {
+      <div class="objects-table-shell">
+        <table class="objects-table">
+          <thead>
+            <tr>
+              <th>Object</th>
+              <th>Key</th>
+              <th>Status</th>
+              <th>Mapped Businesses</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (objectRecord of filteredObjects(); track objectRecord.id) {
+            <tr>
+              <td>
+                <p class="objects-table__name">{{ objectRecord.name }}</p>
+                <p class="objects-table__desc">{{ objectRecord.description || 'No description' }}</p>
+              </td>
+              <td><code>{{ objectRecord.key }}</code></td>
+              <td>
+                <span class="object-card__status" [class.object-card__status--active]="objectRecord.status === 1">
+                  {{ statusLabel(objectRecord.status) }}
+                </span>
+              </td>
+              <td>{{ objectRecord.mapped_business_count }}</td>
+              <td>{{ formatDate(objectRecord.created_at) }}</td>
+              <td>
+                <div class="objects-table__actions">
+                  <a [routerLink]="openObjectRoute(objectRecord)">Open</a>
+                  <a [routerLink]="addRecordRoute(objectRecord)">Add</a>
+                  <button type="button" [disabled]="deletingObjectId() === objectRecord.id"
+                    (click)="deleteObject(objectRecord)">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </section>
+  </div>
+</section>

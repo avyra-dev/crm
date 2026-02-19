@@ -1,0 +1,144 @@
+<section class="record-create-page">
+  <div class="record-create-shell">
+    <header class="record-create-overview">
+      <div class="record-create-overview__top">
+        <nav class="record-create-breadcrumbs" aria-label="Breadcrumb">
+          <a routerLink="/dashboard">Dashboard</a>
+          <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+          <a [routerLink]="buildObjectRoute()">{{ objectHeading() }}</a>
+          <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+          <span>Add {{ objectHeading() }}</span>
+        </nav>
+
+        <div class="record-create-overview__badges">
+          <span class="record-create-badge">{{ workspaceLabel() }}</span>
+          @if (hasFields()) {
+          <span class="record-create-badge">{{ fields().length }} Fields</span>
+          }
+        </div>
+      </div>
+
+      <div class="record-create-header">
+        <div>
+          <p class="record-create-kicker">{{ workspaceLabel() }}</p>
+          <h1>Add {{ objectHeading() }}</h1>
+          <p>Create a new record using the mapped field schema for this object.</p>
+        </div>
+
+        <a [routerLink]="buildObjectRoute()" class="record-create-btn record-create-btn--ghost">
+          <i class="fa-solid fa-arrow-left"></i>
+          Back To {{ objectHeading() }}
+        </a>
+      </div>
+    </header>
+
+    @if (isLoadingFields()) {
+    <section class="record-create-state">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>Loading field schema...</p>
+    </section>
+    } @else if (!hasFields()) {
+    <section class="record-create-state">
+      <i class="fa-regular fa-square-plus"></i>
+      <h2>No Fields Available</h2>
+      <p>Add at least one field to this object before creating records.</p>
+      <a [routerLink]="buildObjectRoute()" class="record-create-btn record-create-btn--primary">
+        Go To Object Workspace
+      </a>
+    </section>
+    } @else {
+    <div class="record-create-layout">
+      <section class="record-create-form-shell">
+        <header>
+          <h2>Record Form</h2>
+          <p>Required fields are marked with an asterisk.</p>
+        </header>
+
+        <form [formGroup]="recordForm" (ngSubmit)="submitRecord()" class="record-create-form">
+          <div class="record-create-grid">
+            @for (fieldRecord of fields(); track fieldRecord.id) {
+            <label class="record-form-field">
+              <span>
+                {{ fieldRecord.name }}
+                @if (fieldRecord.is_required) {
+                <strong>*</strong>
+                }
+              </span>
+
+              @if (isTextAreaField(fieldRecord.type)) {
+              <textarea rows="4" [formControlName]="fieldRecord.id"
+                [placeholder]="fieldRecord.description || ''"></textarea>
+              } @else if (isSelectField(fieldRecord.type)) {
+              <select [formControlName]="fieldRecord.id">
+                <option value="">Select {{ fieldRecord.name }}</option>
+                @for (option of fieldRecord.options; track option) {
+                <option [value]="option">{{ option }}</option>
+                }
+              </select>
+              } @else if (isBooleanField(fieldRecord.type)) {
+              <select [formControlName]="fieldRecord.id">
+                <option value="">Select</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+              } @else {
+              <input [type]="fieldInputType(fieldRecord.type)" [formControlName]="fieldRecord.id"
+                [placeholder]="fieldRecord.description || ''" />
+              }
+
+              @if (recordForm.get(fieldRecord.id)?.invalid && recordForm.get(fieldRecord.id)?.touched) {
+              <small class="record-form-field__error">{{ fieldRecord.name }} is required.</small>
+              }
+            </label>
+            }
+          </div>
+
+          @if (formErrorMessage()) {
+          <p class="record-create-error">{{ formErrorMessage() }}</p>
+          }
+
+          <footer class="record-create-actions">
+            <a [routerLink]="buildObjectRoute()" class="record-create-btn record-create-btn--ghost">Cancel</a>
+            <button type="submit" class="record-create-btn record-create-btn--primary"
+              [disabled]="recordForm.invalid || isSubmitting()">
+              @if (isSubmitting()) {
+              Saving...
+              } @else {
+              Save {{ objectHeading() }}
+              }
+            </button>
+          </footer>
+        </form>
+      </section>
+
+      <aside class="record-create-context">
+        <article class="record-context-card">
+          <h3>Form Guidance</h3>
+          <p>Keep values clean and consistent to improve search, reporting, and automations in this object.</p>
+          <ul>
+            <li>Complete all required fields before submitting.</li>
+            <li>Use standardized values for select and boolean fields.</li>
+            <li>Capture enough detail for downstream workflows.</li>
+          </ul>
+        </article>
+
+        <article class="record-context-card">
+          <h3>Mapped Field Schema</h3>
+          <p>Fields configured for {{ objectHeading() }}:</p>
+          <div class="record-context-fields">
+            @for (fieldRecord of fieldPreview(); track fieldRecord.id) {
+            <div class="record-context-field">
+              <strong>{{ fieldRecord.name }}</strong>
+              <span>{{ fieldRecord.is_required ? 'Required' : 'Optional' }} · {{ fieldRecord.type }}</span>
+            </div>
+            }
+          </div>
+          @if (remainingFieldCount()) {
+          <p class="record-context-more">+{{ remainingFieldCount() }} more fields</p>
+          }
+        </article>
+      </aside>
+    </div>
+    }
+  </div>
+</section>

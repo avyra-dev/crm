@@ -6,6 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { BusinessThemesModule } from './business-themes/business-themes.module';
 import { BusinessesModule } from './businesses/businesses.module';
+import { FieldsModule } from './fields/fields.module';
+import { ObjectsModule } from './objects/objects.module';
+import { ObjectRecordsModule } from './object-records/object-records.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { BusinessesModule } from './businesses/businesses.module';
     UsersModule,
     BusinessThemesModule,
     BusinessesModule,
+    ObjectsModule,
+    FieldsModule,
+    ObjectRecordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

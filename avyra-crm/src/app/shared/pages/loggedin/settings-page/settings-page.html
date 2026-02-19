@@ -2,13 +2,13 @@
   <div class="settings-shell">
     <header class="settings-header">
       <div class="settings-header__brand">
-        <span class="settings-header__badge" aria-hidden="true">T</span>
+        <span class="settings-header__badge" aria-hidden="true">{{ activeTab.charAt(0) }}</span>
         <div>
           <h1 class="settings-title">Workspace Settings</h1>
-          <p class="settings-subtitle">Professional controls for your dashboard theme system.</p>
+          <p class="settings-subtitle">{{ headerSubtitle() }}</p>
         </div>
       </div>
-      <p class="settings-note">Apply All saves theme for {{ activeThemeScopeLabel() }} workspace</p>
+      <p class="settings-note">{{ headerNote() }}</p>
     </header>
 
     <div class="settings-layout">
@@ -40,6 +40,42 @@
               <span class="preview-btn preview-btn--surface">Surface</span>
               <span class="preview-btn preview-btn--danger">Danger</span>
             </div>
+          </div>
+        </section>
+        } @else if (activeTab === 'Objects') {
+        <section class="preview-card" aria-label="Objects Guidance">
+          <header class="preview-card__header">
+            <span class="preview-card__chip">Objects</span>
+            <h2 class="preview-card__title">Reuse Across Businesses</h2>
+          </header>
+
+          <div class="preview-card__surface objects-preview">
+            <p class="preview-card__headline">How object assignment works</p>
+            <p class="preview-card__muted">
+              1. Create user-owned objects.
+              <br />
+              2. Clone and edit when adding into a business.
+              <br />
+              3. Keep one reusable library for all workspaces.
+            </p>
+          </div>
+        </section>
+        } @else if (activeTab === 'Fields') {
+        <section class="preview-card" aria-label="Fields Guidance">
+          <header class="preview-card__header">
+            <span class="preview-card__chip">Fields</span>
+            <h2 class="preview-card__title">Schema + Mapping</h2>
+          </header>
+
+          <div class="preview-card__surface objects-preview">
+            <p class="preview-card__headline">Recommended field workflow</p>
+            <p class="preview-card__muted">
+              1. Create fields in default workspace.
+              <br />
+              2. In business workspace, create and map directly to business objects.
+              <br />
+              3. Use default workspace for cross-business reusable mappings.
+            </p>
           </div>
         </section>
         }
@@ -91,6 +127,17 @@
             <button type="button" class="settings-reset-btn" (click)="resetTheme()">Reset Default</button>
           </div>
         </form>
+        } @else if (activeTab === 'Objects') {
+        <app-object-create-component></app-object-create-component>
+        } @else if (activeTab === 'Fields') {
+        <app-field-library-component></app-field-library-component>
+        } @else {
+        <section class="settings-placeholder">
+          <h2 class="editor-title">{{ activeTab }}</h2>
+          <p class="editor-subtitle">
+            This module is reserved for your next implementation phase.
+          </p>
+        </section>
         }
       </main>
     </div>

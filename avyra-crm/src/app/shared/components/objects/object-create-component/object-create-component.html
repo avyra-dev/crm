@@ -1,0 +1,137 @@
+<section class="object-create-shell">
+  <header class="object-create-header">
+    <div>
+      <p class="object-create-kicker">Objects</p>
+      <h2 class="object-create-title">Create Object for {{ workspaceLabel() }}</h2>
+      <p class="object-create-subtitle">
+        Structured CRM object setup with reusable schema strategy.
+      </p>
+    </div>
+
+    <div class="object-create-badges">
+      <span>{{ workspaceModeLabel() }}</span>
+      @if (isBusinessWorkspace()) {
+      <span>{{ cloneOptionCount() }} Reusable Templates</span>
+      }
+    </div>
+  </header>
+
+  <div class="object-create-layout">
+    <form [formGroup]="createObjectForm" (ngSubmit)="submitCreateObject()" class="object-create-form">
+      @if (isBusinessWorkspace()) {
+      <section class="object-mode">
+        <header class="object-mode__header">
+          <h4>Creation Mode</h4>
+          <p>Select how this business object should be initialized.</p>
+        </header>
+
+        <div class="object-mode__toggle">
+          <button type="button" class="object-mode__btn" [class.object-mode__btn--active]="creationMode() === 'new'"
+            (click)="setCreationMode('new')">
+            New Object
+          </button>
+          <button type="button" class="object-mode__btn" [class.object-mode__btn--active]="creationMode() === 'clone'"
+            [disabled]="isLoadingCloneOptions() || !userObjectOptions().length" (click)="setCreationMode('clone')">
+            Clone Existing
+          </button>
+        </div>
+
+        @if (isLoadingCloneOptions()) {
+        <p class="object-mode__hint">Loading reusable object templates...</p>
+        } @else if (!userObjectOptions().length) {
+        <p class="object-mode__hint">No reusable templates found in your user library yet.</p>
+        } @else if (creationMode() === 'clone') {
+        <label class="object-form__field">
+          <span>Select Template Object</span>
+          <select #cloneSourceSelect [value]="cloneSourceId()" (change)="onCloneSourceSelect(cloneSourceSelect.value)">
+            <option value="">Choose object</option>
+            @for (sourceObject of userObjectOptions(); track sourceObject.id) {
+            <option [value]="sourceObject.id">{{ sourceObject.name }} ({{ sourceObject.key }})</option>
+            }
+          </select>
+        </label>
+        }
+
+        <p class="object-mode__note">{{ modeHelpText() }}</p>
+      </section>
+      }
+
+      <section class="object-form-section">
+        <header>
+          <h4>Identity</h4>
+          <p>Core naming and key used in routes, pivots, and integrations.</p>
+        </header>
+
+        <div class="object-form-grid">
+          <label class="object-form__field">
+            <span>Object Name</span>
+            <input type="text" formControlName="name" placeholder="Example: Properties" />
+          </label>
+
+          <label class="object-form__field">
+            <span>Object Key (optional)</span>
+            <input type="text" formControlName="key" placeholder="properties" />
+          </label>
+        </div>
+      </section>
+
+      <section class="object-form-section">
+        <header>
+          <h4>Behavior</h4>
+          <p>Describe use case and activation state for this object.</p>
+        </header>
+
+        <label class="object-form__field">
+          <span>Description</span>
+          <textarea formControlName="description" rows="4"
+            placeholder="What this object represents in your CRM"></textarea>
+        </label>
+
+        <label class="object-form__field object-form__field--status">
+          <span>Status</span>
+          <select formControlName="status">
+            <option [value]="1">Active</option>
+            <option [value]="0">Inactive</option>
+          </select>
+        </label>
+      </section>
+
+      @if (formErrorMessage()) {
+      <p class="object-form__error">{{ formErrorMessage() }}</p>
+      }
+
+      @if (formSuccessMessage()) {
+      <p class="object-form__success">{{ formSuccessMessage() }}</p>
+      }
+
+      <footer class="object-form__actions">
+        <button type="submit" [disabled]="createObjectForm.invalid || isSubmitting()" class="object-submit-btn">
+          @if (isSubmitting()) {
+          Saving...
+          } @else {
+          Save Object
+          }
+        </button>
+      </footer>
+    </form>
+
+    <aside class="object-create-aside">
+      <article class="object-aside-card">
+        <h4>Recommended Workflow</h4>
+        <ol>
+          <li>Create stable object key with clear naming.</li>
+          <li>Configure fields from Settings &gt; Fields.</li>
+          <li>Use object page to start adding live records.</li>
+        </ol>
+      </article>
+
+      <article class="object-aside-card object-aside-card--note">
+        <h4>Key Standard</h4>
+        <p>
+          Keep keys lowercase with underscores (for example: <code>sales_deal</code>)
+          to maintain clean API, route, and analytics compatibility.
+        </p>
+      </article>
+    </aside>
+  </div>
+</section>

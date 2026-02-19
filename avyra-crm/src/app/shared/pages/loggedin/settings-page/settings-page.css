@@ -175,6 +175,10 @@
   background: var(--theme-bg-surface);
 }
 
+.objects-preview {
+  padding: 12px;
+}
+
 .preview-card__topbar {
   height: 6px;
   background: linear-gradient(90deg, var(--theme-accent-start), var(--theme-accent-end));
@@ -234,6 +238,13 @@
 
 .settings-content {
   padding: 18px 18px 20px;
+}
+
+.settings-placeholder {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 58%, white);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--theme-bg-surface) 98%, transparent);
+  padding: 18px;
 }
 
 .settings-form {

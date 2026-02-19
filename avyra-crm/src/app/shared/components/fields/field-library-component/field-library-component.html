@@ -1,0 +1,269 @@
+<section class="field-library-shell">
+  <header class="field-library-header">
+    <div>
+      <p class="field-library-kicker">Fields</p>
+      <h2 class="field-library-title">Reusable Field Library</h2>
+      <p class="field-library-subtitle">
+        Create user-owned field schema in default workspace and map to any object/business.
+      </p>
+    </div>
+  </header>
+
+  @if (isBusinessWorkspace()) {
+  <p class="field-library-note">
+    Fields created here are saved to your reusable schema and mapped to the selected business object.
+  </p>
+  }
+
+  <section class="field-library-grid">
+    <article class="field-panel">
+      <header class="field-panel__header">
+        <h3>Create Field Schema</h3>
+        <p>
+          @if (isDefaultWorkspace()) {
+          Creates reusable user-level field definition (no mapping by default).
+          } @else {
+          Creates reusable field schema and maps it to an object in this business.
+          }
+        </p>
+      </header>
+
+      <form [formGroup]="createFieldForm" (ngSubmit)="submitCreateField()" class="field-form">
+        <label class="field-form__field">
+          <span>Field Name</span>
+          <input type="text" formControlName="name" placeholder="Example: Lead Source" />
+        </label>
+
+        <div class="field-form__inline">
+          <label class="field-form__field">
+            <span>Field Key (optional)</span>
+            <input type="text" formControlName="key" placeholder="lead_source" />
+          </label>
+          <label class="field-form__field">
+            <span>Field Type</span>
+            <select formControlName="type">
+              @for (fieldType of fieldTypeOptions; track fieldType.value) {
+              <option [value]="fieldType.value">{{ fieldType.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        @if (showOptionsInput()) {
+        <div class="field-form__field field-form__field--options">
+          <span>Select Options</span>
+
+          <div class="field-options-builder">
+            <input type="text" [value]="optionDraft()" (input)="onOptionDraftInput(($any($event.target).value))"
+              (keydown.enter)="addOption($event)" placeholder="Type option and press Enter" />
+            <button type="button" class="field-options-builder__btn" (click)="addOption()">Add</button>
+          </div>
+
+          <p class="field-form__hint">Add options quickly with Enter. You can also paste comma or new-line values.</p>
+          <textarea rows="3" formControlName="options" placeholder="Cold, Warm, Hot"></textarea>
+
+          @if (optionErrorMessage()) {
+          <p class="field-form__error">{{ optionErrorMessage() }}</p>
+          }
+
+          @if (fieldOptionsPreview().length) {
+          <div class="field-options-chips">
+            @for (option of fieldOptionsPreview(); track option) {
+            <button type="button" class="field-option-chip" (click)="removeOption(option)"
+              [attr.aria-label]="'Remove option ' + option">
+              <span>{{ option }}</span>
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            }
+          </div>
+          }
+        </div>
+        }
+
+        @if (isBusinessWorkspace()) {
+        <label class="field-form__field">
+          <span>Target Object (required in business)</span>
+          <select formControlName="object_id" [disabled]="isLoadingObjectOptions()">
+            <option value="">Choose object</option>
+            @for (objectRecord of createTargetObjectOptions(); track objectRecord.id) {
+            <option [value]="objectRecord.id">{{ objectRecord.name }} ({{ objectRecord.key }})</option>
+            }
+          </select>
+        </label>
+
+        @if (isLoadingObjectOptions()) {
+        <p class="field-form__hint">Loading objects...</p>
+        } @else if (!createTargetObjectOptions().length) {
+        <p class="field-form__hint">No objects mapped to this business yet.</p>
+        }
+        }
+
+        <label class="field-form__field">
+          <span>Description</span>
+          <textarea rows="3" formControlName="description"
+            placeholder="Used to track the origin channel for each lead"></textarea>
+        </label>
+
+        <div class="field-form__inline">
+          <label class="field-form__field">
+            <span>Status</span>
+            <select formControlName="status">
+              <option [value]="1">Active</option>
+              <option [value]="0">Inactive</option>
+            </select>
+          </label>
+
+          <label class="field-form__switch">
+            <input type="checkbox" formControlName="is_required" />
+            <span>Mark as required</span>
+          </label>
+        </div>
+
+        @if (createErrorMessage()) {
+        <p class="field-form__error">{{ createErrorMessage() }}</p>
+        }
+        @if (createSuccessMessage()) {
+        <p class="field-form__success">{{ createSuccessMessage() }}</p>
+        }
+
+        <footer class="field-form__actions">
+          <button type="submit" class="field-primary-btn" [disabled]="createFieldForm.invalid || isCreatingField()">
+            @if (isCreatingField()) {
+            Saving...
+            } @else {
+            Save Field
+            }
+          </button>
+        </footer>
+      </form>
+    </article>
+
+    @if (isDefaultWorkspace()) {
+    <article class="field-panel">
+      <header class="field-panel__header">
+        <h3>Map Field To Object</h3>
+        <p>Assign reusable fields to any object in default or a specific business.</p>
+      </header>
+
+      <form [formGroup]="mapFieldForm" (ngSubmit)="submitMapField()" class="field-form">
+        <label class="field-form__field">
+          <span>Select Field</span>
+          <select formControlName="field_id">
+            <option value="">Choose field</option>
+            @for (fieldRecord of fields(); track fieldRecord.id) {
+            <option [value]="fieldRecord.id">
+              {{ fieldRecord.name }} ({{ fieldTypeLabel(fieldRecord.type) }})
+            </option>
+            }
+          </select>
+        </label>
+
+        <label class="field-form__field">
+          <span>Business Scope</span>
+          <select formControlName="business_id">
+            <option value="default">Default (Global Mapping)</option>
+            @for (business of businesses(); track business.id) {
+            <option [value]="business.id">{{ business.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field-form__field">
+          <span>Object</span>
+          <select formControlName="object_id" [disabled]="isLoadingObjectOptions()">
+            <option value="">Choose object</option>
+            @for (objectRecord of filteredObjectOptions(); track objectRecord.id) {
+            <option [value]="objectRecord.id">{{ objectRecord.name }} ({{ objectRecord.key }})</option>
+            }
+          </select>
+        </label>
+
+        @if (isLoadingObjectOptions()) {
+        <p class="field-form__hint">Loading objects...</p>
+        } @else if (!filteredObjectOptions().length) {
+        <p class="field-form__hint">No objects available for selected business scope.</p>
+        }
+
+        @if (mapErrorMessage()) {
+        <p class="field-form__error">{{ mapErrorMessage() }}</p>
+        }
+        @if (mapSuccessMessage()) {
+        <p class="field-form__success">{{ mapSuccessMessage() }}</p>
+        }
+
+        <footer class="field-form__actions">
+          <button type="submit" class="field-primary-btn" [disabled]="mapFieldForm.invalid || isMappingField()">
+            @if (isMappingField()) {
+            Mapping...
+            } @else {
+            Map Field
+            }
+          </button>
+        </footer>
+      </form>
+    </article>
+    }
+  </section>
+
+  <section class="field-list-panel">
+    <header class="field-panel__header">
+      <h3>Field Schema Inventory</h3>
+      <p>All reusable fields owned by your user profile.</p>
+    </header>
+
+    @if (isLoadingFields()) {
+    <div class="field-list-state">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>Loading field schema...</p>
+    </div>
+    } @else if (!fields().length) {
+    <div class="field-list-state">
+      <i class="fa-regular fa-square-plus"></i>
+      <p>No fields created yet.</p>
+    </div>
+    } @else {
+    <div class="field-list-grid">
+      @for (fieldRecord of fields(); track fieldRecord.id) {
+      <article class="field-item">
+        <header class="field-item__header">
+          <div>
+            <h4>{{ fieldRecord.name }}</h4>
+            <p>{{ fieldRecord.key }}</p>
+          </div>
+          <div class="field-item__actions">
+            <span class="field-type-pill">{{ fieldTypeLabel(fieldRecord.type) }}</span>
+            <button type="button" class="field-delete-btn" [disabled]="deletingFieldId() === fieldRecord.id"
+              (click)="deleteField(fieldRecord)">
+              @if (deletingFieldId() === fieldRecord.id) {
+              Deleting...
+              } @else {
+              Delete
+              }
+            </button>
+          </div>
+        </header>
+
+        @if (fieldRecord.description) {
+        <p class="field-item__description">{{ fieldRecord.description }}</p>
+        }
+
+        <div class="field-item__meta">
+          <span>{{ fieldRecord.is_required ? 'Required' : 'Optional' }}</span>
+          <span>Mapped Objects: {{ fieldRecord.mapped_object_count }}</span>
+          <span>Mapped Businesses: {{ fieldRecord.mapped_business_count }}</span>
+          <span>Created {{ formatDate(fieldRecord.created_at) }}</span>
+        </div>
+
+        @if (fieldRecord.mapped_objects.length) {
+        <div class="field-item__mappings">
+          @for (mapping of fieldRecord.mapped_objects; track mapping.object_id + '-' + (mapping.business_id || 'default')) {
+          <span>{{ businessLabel(mapping.business_id) }}</span>
+          }
+        </div>
+        }
+      </article>
+      }
+    </div>
+    }
+  </section>
+</section>

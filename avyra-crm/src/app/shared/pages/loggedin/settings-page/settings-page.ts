@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ThemeConfig, ThemeService } from '../../../../services/theme.service';
 import { BusinessService } from '../../../../services/business.service';
+import { ObjectCreateComponent } from '../../../components/objects/object-create-component/object-create-component';
+import { FieldLibraryComponent } from '../../../components/fields/field-library-component/field-library-component';
 
-type SettingsTab = 'Theme' | 'Integrations' | 'Account' | 'Billing';
+type SettingsTab = 'Theme' | 'Objects' | 'Fields' | 'Integrations' | 'Account' | 'Billing';
 type ThemeSectionId = 'Brand' | 'Typography' | 'Surfaces' | 'Status';
 
 interface ThemeField {
@@ -22,17 +25,40 @@ interface ThemeSection {
 
 @Component({
   selector: 'app-settings-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ObjectCreateComponent, FieldLibraryComponent],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.css',
 })
 export class SettingsPage {
   private readonly themeService = inject(ThemeService);
   private readonly businessService = inject(BusinessService);
+  private readonly route = inject(ActivatedRoute);
 
-  readonly tabs: SettingsTab[] = ['Theme', 'Integrations', 'Account', 'Billing'];
+  readonly tabs: SettingsTab[] = ['Theme', 'Objects', 'Fields', 'Integrations', 'Account', 'Billing'];
   activeTab: SettingsTab = 'Theme';
   activeThemeScopeLabel = computed(() => this.businessService.selectedBusiness()?.name ?? 'Default');
+  headerSubtitle = computed(() =>
+    this.activeTab === 'Theme'
+      ? 'Professional controls for your dashboard theme system.'
+      : this.activeTab === 'Objects'
+        ? 'Create and reuse CRM objects that can be assigned per business.'
+        : this.activeTab === 'Fields'
+          ? 'Manage reusable user-owned fields and object mappings.'
+        : 'Configuration surface for upcoming workspace modules.',
+  );
+  headerNote = computed(() =>
+    this.activeTab === 'Theme'
+      ? `Apply All saves theme for ${this.activeThemeScopeLabel()} workspace`
+      : this.activeTab === 'Objects'
+        ? this.businessService.selectedBusiness()
+          ? `Objects created here are assigned to ${this.activeThemeScopeLabel()} workspace`
+          : 'Objects created here are saved to your reusable user library'
+        : this.activeTab === 'Fields'
+          ? this.businessService.selectedBusiness()
+            ? `Fields created here are mapped to objects in ${this.activeThemeScopeLabel()}`
+            : 'Field schema created here is reusable and can be mapped to any object/business'
+        : `Coming soon for ${this.activeTab}`,
+  );
 
   themeDraft: ThemeConfig = this.themeService.getDefaultTheme();
 
@@ -83,6 +109,11 @@ export class SettingsPage {
   ];
 
   constructor() {
+    const requestedTab = this.resolveSettingsTab(this.route.snapshot.queryParamMap.get('tab'));
+    if (requestedTab) {
+      this.activeTab = requestedTab;
+    }
+
     effect(() => {
       this.themeDraft = { ...this.themeService.theme() };
     });
@@ -115,5 +146,14 @@ export class SettingsPage {
   resetTheme(): void {
     const defaultTheme = this.themeService.resetTheme();
     this.themeDraft = { ...defaultTheme };
+  }
+
+  private resolveSettingsTab(value: string | null): SettingsTab | null {
+    if (!value) {
+      return null;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    return this.tabs.find((tab) => tab.toLowerCase() === normalized) ?? null;
   }
 }
