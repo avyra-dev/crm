@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { ApiResponseObject } from 'src/common/dto/response';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { toApiResponse } from 'src/common/utils/api-response.util';
 import { FieldsService } from '../fields.service';
 
 @Controller('fields')
@@ -15,25 +16,25 @@ export class FieldsController {
     @Query('object_id') objectId?: string,
   ): Promise<ApiResponseObject> {
     const result = await this.fieldsService.findAll(req.user.sub, businessId ?? null, objectId ?? null);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Get(':id')
   async getField(@Req() req: any, @Param('id') id: string): Promise<ApiResponseObject> {
     const result = await this.fieldsService.findOne(req.user.sub, id);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Post()
   async createField(@Req() req: any, @Body() body: any): Promise<ApiResponseObject> {
     const result = await this.fieldsService.createField(req.user.sub, body);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Post(':id/objects')
   async mapFieldToObject(@Req() req: any, @Param('id') id: string, @Body() body: any): Promise<ApiResponseObject> {
     const result = await this.fieldsService.mapFieldToObject(req.user.sub, id, body);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Delete(':id/objects/:objectId')
@@ -44,18 +45,18 @@ export class FieldsController {
     @Query('business_id') businessId?: string,
   ): Promise<ApiResponseObject> {
     const result = await this.fieldsService.unmapFieldFromObject(req.user.sub, id, objectId, businessId ?? null);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Patch(':id')
   async updateField(@Req() req: any, @Param('id') id: string, @Body() body: any): Promise<ApiResponseObject> {
     const result = await this.fieldsService.updateField(req.user.sub, id, body);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Delete(':id')
   async deleteField(@Req() req: any, @Param('id') id: string): Promise<ApiResponseObject> {
     const result = await this.fieldsService.deleteField(req.user.sub, id);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 }

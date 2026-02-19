@@ -14,7 +14,14 @@ export class StorageService {
     getItem<T>(key: string): T | null {
         if (!this.isBrowser) return null;
         const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : null;
+        if (!item) return null;
+
+        try {
+            return JSON.parse(item) as T;
+        } catch {
+            localStorage.removeItem(key);
+            return null;
+        }
     }
 
     setItem(key: string, value: any): void {

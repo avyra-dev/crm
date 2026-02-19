@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { createHash, randomBytes, randomInt } from 'crypto';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'crypto';
 import { User, UserDocument } from './schemas/user.schema';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -20,6 +20,8 @@ export class UsersService {
   private static OTP_TTL_MS = 5 * 60 * 1000;
   private static OTP_MAX_ATTEMPTS = 5;
   private static OTP_LOCK_MS = 15 * 60 * 1000;
+  private static OTP_RESEND_COOLDOWN_MS = 30 * 1000;
+  private static PHONE_REGEX = /^\+?\d{10,15}$/;
 
   private hashOtp(otp: string, salt: string): string {
     const secret = this.configService.get<string>('HASH_SECRET') ?? '';
@@ -38,6 +40,25 @@ export class UsersService {
   private buildDefaultName(phoneNumber: string): string {
     const lastFour = phoneNumber.slice(-4);
     return `User ${lastFour || phoneNumber}`;
+  }
+
+  private normalizePhoneNumber(value: unknown): string {
+    return String(value ?? '')
+      .trim()
+      .replace(/[\s()-]/g, '');
+  }
+
+  private isValidPhoneNumber(phoneNumber: string): boolean {
+    return UsersService.PHONE_REGEX.test(phoneNumber);
+  }
+
+  private secureCompare(left: string, right: string): boolean {
+    const leftBuffer = Buffer.from(left, 'utf8');
+    const rightBuffer = Buffer.from(right, 'utf8');
+    if (leftBuffer.length !== rightBuffer.length) {
+      return false;
+    }
+    return timingSafeEqual(leftBuffer, rightBuffer);
   }
 
   async seedUsers() {
@@ -75,9 +96,12 @@ export class UsersService {
   }
 
   async sendOtp(phone_number: string) {
-    const normalizedPhoneNumber = String(phone_number ?? '').trim();
+    const normalizedPhoneNumber = this.normalizePhoneNumber(phone_number);
     if (!normalizedPhoneNumber) {
       return { message: 'Phone number is required', status: false, statusCode: 400 };
+    }
+    if (!this.isValidPhoneNumber(normalizedPhoneNumber)) {
+      return { message: 'Phone number format is invalid', status: false, statusCode: 400 };
     }
 
     let user = await this.userModel.findOne({ phone_number: normalizedPhoneNumber });
@@ -111,6 +135,17 @@ export class UsersService {
     if (user.otp_locked_until && user.otp_locked_until > now) {
       return { message: 'OTP temporarily locked due to failed attempts', status: false, statusCode: 429 };
     }
+    if (user.otp_last_sent_at) {
+      const elapsedMs = now.getTime() - user.otp_last_sent_at.getTime();
+      if (elapsedMs < UsersService.OTP_RESEND_COOLDOWN_MS) {
+        const waitSeconds = Math.ceil((UsersService.OTP_RESEND_COOLDOWN_MS - elapsedMs) / 1000);
+        return {
+          message: `Please wait ${waitSeconds}s before requesting another OTP`,
+          status: false,
+          statusCode: 429,
+        };
+      }
+    }
 
     const { otp, salt, hash } = this.generateOtp();
     const expiresAt = new Date(now.getTime() + UsersService.OTP_TTL_MS);
@@ -128,15 +163,21 @@ export class UsersService {
       message: isNewUser ? 'Account created and OTP sent successfully' : 'OTP sent successfully',
       status: true,
       statusCode: 200,
-      data: { expires_at: expiresAt, otp: otp, is_new_user: isNewUser },
+      data: { expires_at: expiresAt, is_new_user: isNewUser, otp: otp },
     };
   }
 
   async verifyOtp(phone_number: string, otp: string) {
-    const normalizedPhoneNumber = String(phone_number ?? '').trim();
+    const normalizedPhoneNumber = this.normalizePhoneNumber(phone_number);
     const normalizedOtp = String(otp ?? '').trim();
     if (!normalizedPhoneNumber || !normalizedOtp) {
       return { message: 'Phone number and OTP are required', status: false, statusCode: 400 };
+    }
+    if (!this.isValidPhoneNumber(normalizedPhoneNumber)) {
+      return { message: 'Phone number format is invalid', status: false, statusCode: 400 };
+    }
+    if (!/^\d{6}$/.test(normalizedOtp)) {
+      return { message: 'OTP format is invalid', status: false, statusCode: 400 };
     }
 
     const user = await this.userModel.findOne({ phone_number: normalizedPhoneNumber });
@@ -159,7 +200,7 @@ export class UsersService {
     }
 
     const incomingHash = this.hashOtp(normalizedOtp, user.otp_salt);
-    if (incomingHash !== user.otp_hash) {
+    if (!this.secureCompare(incomingHash, user.otp_hash)) {
       const attempts = (user.otp_attempts ?? 0) + 1;
       user.otp_attempts = attempts;
       if (attempts >= UsersService.OTP_MAX_ATTEMPTS) {

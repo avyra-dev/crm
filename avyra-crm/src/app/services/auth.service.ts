@@ -25,8 +25,8 @@ export interface ApiResponse<T> {
 
 export interface OtpRequestData {
   expires_at: string;
-  otp?: string;
   is_new_user?: boolean;
+  otp?: string;
 }
 
 export interface OtpVerifyData {
@@ -56,10 +56,14 @@ export class AuthService {
   }
 
   private loadUser() {
+    const token = this.storage.getItem<string>(this.TOKEN_KEY);
     const user = this.storage.getItem<User>(this.USER_KEY);
-    if (user) {
+    if (token && user && this.isTokenValid(token)) {
       this.currentUser.set(user);
+      return;
     }
+
+    this.clearSessionState();
   }
 
   requestOtp(phone_number: string): Observable<ApiResponse<OtpRequestData>> {
@@ -92,10 +96,30 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return this.storage.getItem<string>(this.TOKEN_KEY);
+    const token = this.storage.getItem<string>(this.TOKEN_KEY);
+    if (!token || !this.isTokenValid(token)) {
+      this.clearSessionState();
+      return null;
+    }
+
+    return token;
   }
 
   logout() {
+    this.clearSessionState();
+    this.router.navigate(['/login']);
+  }
+
+  isAuthenticated(): boolean {
+    return Boolean(this.getToken() && this.currentUser());
+  }
+
+  private generateAvatar(label: string): string {
+    const safe = encodeURIComponent(label);
+    return `https://ui-avatars.com/api/?name=${safe}&background=0D8ABC&color=fff`;
+  }
+
+  private clearSessionState() {
     this.storage.removeItem(this.TOKEN_KEY);
     this.storage.removeItem(this.USER_KEY);
     this.businessService.clearState();
@@ -103,15 +127,43 @@ export class AuthService {
     this.fieldService.clearState();
     this.themeService.resetTheme();
     this.currentUser.set(null);
-    this.router.navigate(['/login']);
   }
 
-  isAuthenticated(): boolean {
-    return !!this.currentUser();
+  private isTokenValid(token: string): boolean {
+    const payload = this.decodeJwtPayload(token);
+    if (!payload) {
+      return false;
+    }
+
+    if (typeof payload.exp !== 'number') {
+      return true;
+    }
+
+    return payload.exp * 1000 > Date.now();
   }
 
-  private generateAvatar(label: string): string {
-    const safe = encodeURIComponent(label);
-    return `https://ui-avatars.com/api/?name=${safe}&background=0D8ABC&color=fff`;
+  private decodeJwtPayload(token: string): { exp?: number } | null {
+    const parts = String(token || '').split('.');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const payloadPart = parts[1];
+    const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    if (typeof atob !== 'function') {
+      return null;
+    }
+
+    try {
+      const decoded = atob(padded);
+      const payload = JSON.parse(decoded);
+      if (!payload || typeof payload !== 'object') {
+        return null;
+      }
+      return payload as { exp?: number };
+    } catch {
+      return null;
+    }
   }
 }

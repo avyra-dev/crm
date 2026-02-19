@@ -17,7 +17,7 @@ export class LoginComponent {
   private authService = inject(AuthService);
 
   loginForm: FormGroup = this.fb.group({
-    phone_number: ['', [Validators.required, Validators.pattern(/^\d{10,15}$/)]],
+    phone_number: ['', [Validators.required, Validators.pattern(/^\+?\d{10,15}$/)]],
     otp: ['']
   });
 
@@ -49,9 +49,9 @@ export class LoginComponent {
           this.step.set('otp');
           this.otpExpiresAt.set(response.data?.expires_at ?? null);
           this.loginForm.get('otp')?.reset();
+          this.loginForm.get('otp')?.setValue(response.data?.otp ?? '');
           this.loginForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6)]);
           this.loginForm.get('otp')?.updateValueAndValidity();
-          this.loginForm.get('otp')?.setValue(response.data?.otp ?? '');
           this.helperMessage.set(
             response.data?.is_new_user
               ? 'Account created. OTP sent to your phone. Enter the 6-digit code.'

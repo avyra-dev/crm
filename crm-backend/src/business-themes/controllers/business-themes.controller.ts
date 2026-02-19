@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { ApiResponseObject } from 'src/common/dto/response';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { toApiResponse } from 'src/common/utils/api-response.util';
 import { BusinessThemesService } from '../business-themes.service';
 
 @Controller('business-themes')
@@ -11,7 +12,7 @@ export class BusinessThemesController {
   @Get('default')
   async getDefaultTheme(@Req() req: any, @Query('business_id') businessId?: string): Promise<ApiResponseObject> {
     const result = await this.businessThemesService.getDefaultTheme(req.user.sub, businessId ?? null);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Post('default')
@@ -33,6 +34,6 @@ export class BusinessThemesController {
       themePayload,
       businessId,
     );
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 }

@@ -21,19 +21,45 @@ export class ResponseInterceptor<T>
 {
   intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponse<T>> {
     const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
     const timeZoneHeader =
       (typeof request?.get === 'function' ? request.get('x-timezone') : undefined) ??
       request?.headers?.['x-timezone'];
     const timeZone = this.normalizeTimeZone(timeZoneHeader) ?? 'UTC';
     return (next.handle() as Observable<any>).pipe(
-      map((data) => ({
-        status: data.status === 'success' ? true : false,
-        timestamp: this.formatDateInTimeZone(new Date(), timeZone),
-        path: request?.originalUrl ?? request?.url ?? '',
-        message: data.message || '',
-        data: this.convertDates(data.data ?? null, timeZone) as unknown as T,
-      })),
+      map((data) => {
+        const statusCode = this.resolveStatusCode(data?.statusCode);
+        if (statusCode && typeof response?.status === 'function') {
+          response.status(statusCode);
+        }
+
+        return {
+          status: this.resolveStatusFlag(data?.status),
+          timestamp: this.formatDateInTimeZone(new Date(), timeZone),
+          path: request?.originalUrl ?? request?.url ?? '',
+          message: data?.message || '',
+          data: this.convertDates(data?.data ?? null, timeZone) as unknown as T,
+        };
+      }),
     );
+  }
+
+  private resolveStatusFlag(value: unknown): boolean {
+    if (value === true || value === 'success') {
+      return true;
+    }
+    return false;
+  }
+
+  private resolveStatusCode(value: unknown): number | null {
+    const parsed = typeof value === 'number' ? value : Number(String(value ?? '').trim());
+    if (!Number.isInteger(parsed)) {
+      return null;
+    }
+    if (parsed < 100 || parsed > 599) {
+      return null;
+    }
+    return parsed;
   }
 
   private normalizeTimeZone(value: unknown): string | null {

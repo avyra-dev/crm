@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import type { ApiResponseObject } from 'src/common/dto/response';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { toApiResponse } from 'src/common/utils/api-response.util';
 import { BusinessesService } from '../businesses.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -61,13 +62,13 @@ export class BusinessesController {
   @Get()
   async getBusinesses(@Req() req: any): Promise<ApiResponseObject> {
     const result = await this.businessesService.findAll(req.user.sub);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Get(':id')
   async getBusiness(@Req() req: any, @Param('id') id: string): Promise<ApiResponseObject> {
     const result = await this.businessesService.findOne(req.user.sub, id);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Post()
@@ -82,7 +83,7 @@ export class BusinessesController {
       logo_path: file ? `/uploads/business-logos/${file.filename}` : body?.logo_path,
     };
     const result = await this.businessesService.createBusiness(req.user.sub, payload);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Patch(':id')
@@ -98,7 +99,7 @@ export class BusinessesController {
       ...(file ? { logo_path: `/uploads/business-logos/${file.filename}` } : {}),
     };
     const result = await this.businessesService.updateBusiness(req.user.sub, id, payload);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Put(':id')
@@ -114,12 +115,12 @@ export class BusinessesController {
       ...(file ? { logo_path: `/uploads/business-logos/${file.filename}` } : {}),
     };
     const result = await this.businessesService.updateBusiness(req.user.sub, id, payload);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Delete(':id')
   async deleteBusiness(@Req() req: any, @Param('id') id: string): Promise<ApiResponseObject> {
     const result = await this.businessesService.deleteBusiness(req.user.sub, id);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 }

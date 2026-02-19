@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { ApiResponseObject } from 'src/common/dto/response';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { toApiResponse } from 'src/common/utils/api-response.util';
 import { ObjectRecordsService } from '../object-records.service';
 
 @Controller('objects/:objectId/records')
@@ -28,7 +29,7 @@ export class ObjectRecordsController {
       sort_direction: sortDirection ?? null,
     });
 
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Post()
@@ -38,7 +39,7 @@ export class ObjectRecordsController {
     @Body() body: any,
   ): Promise<ApiResponseObject> {
     const result = await this.objectRecordsService.createRecord(req.user.sub, objectId, body);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Get('views')
@@ -51,7 +52,7 @@ export class ObjectRecordsController {
       business_id: businessId ?? null,
     });
 
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Post('views')
@@ -61,7 +62,7 @@ export class ObjectRecordsController {
     @Body() body: any,
   ): Promise<ApiResponseObject> {
     const result = await this.objectRecordsService.createView(req.user.sub, objectId, body);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Patch('views/:viewId')
@@ -72,7 +73,7 @@ export class ObjectRecordsController {
     @Body() body: any,
   ): Promise<ApiResponseObject> {
     const result = await this.objectRecordsService.updateView(req.user.sub, objectId, viewId, body);
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 
   @Get('export')
@@ -91,6 +92,6 @@ export class ObjectRecordsController {
       sort_direction: sortDirection ?? null,
     });
 
-    return { message: result.message, data: result.data ?? null, status: result.status ? 'success' : 'error' };
+    return toApiResponse(result);
   }
 }
